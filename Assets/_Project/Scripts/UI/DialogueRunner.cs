@@ -17,7 +17,10 @@ namespace Bandhana.UI
         int playStartFrame = -1;
         public bool IsPlaying => isPlaying;
 
-        GUIStyle speakerStyle, lineStyle, hintStyle;
+        // Typewriter
+        const float charsPerSecond = 55f;
+        float lineStartTime;
+        bool fullyRevealed;
 
         void Awake()
         {
@@ -37,8 +40,8 @@ namespace Bandhana.UI
             index = 0;
             isPlaying = true;
             playStartFrame = Time.frameCount;
-            // Swallow the trigger key (E) on this frame so DialogueRunner.Update
-            // doesn't instantly advance past the first line.
+            lineStartTime = Time.unscaledTime;
+            fullyRevealed = false;
             UIState.ConsumeInputThisFrame();
             UIState.Open();
         }
@@ -46,13 +49,16 @@ namespace Bandhana.UI
         void Update()
         {
             if (!isPlaying) return;
-            // Ignore input on the same frame Play() was called (the press that opened us).
             if (Time.frameCount == playStartFrame) return;
 
             var kb = Keyboard.current;
             if (kb == null) return;
-            if (kb.eKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame)
-                Advance();
+            bool advance = kb.eKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame;
+            if (advance)
+            {
+                if (!fullyRevealed) { fullyRevealed = true; }
+                else Advance();
+            }
             else if (kb.escapeKey.wasPressedThisFrame)
                 End();
         }
@@ -60,52 +66,74 @@ namespace Bandhana.UI
         void Advance()
         {
             index++;
-            if (index >= current.lines.Count) End();
+            if (index >= current.lines.Count) { End(); return; }
+            lineStartTime = Time.unscaledTime;
+            fullyRevealed = false;
         }
 
         void End()
         {
             isPlaying = false;
             current = null;
-            // Stop PlayerController from re-interpreting the same key press as a new interaction.
             UIState.ConsumeInputThisFrame();
             UIState.Close();
-        }
-
-        void EnsureStyles()
-        {
-            if (speakerStyle != null) return;
-            speakerStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 20, fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.95f, 0.85f, 0.55f) }
-            };
-            lineStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 18, wordWrap = true,
-                normal = { textColor = new Color(0.95f, 0.95f, 0.85f) }
-            };
-            hintStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 13, alignment = TextAnchor.MiddleRight,
-                normal = { textColor = new Color(0.7f, 0.7f, 0.7f) }
-            };
         }
 
         void OnGUI()
         {
             if (!isPlaying || current == null) return;
-            EnsureStyles();
+            UITheme.Ensure();
 
             const float margin = 24f;
-            const float boxH = 150f;
+            const float boxH = 170f;
             var rect = new Rect(margin, Screen.height - margin - boxH, Screen.width - margin * 2f, boxH);
-            GUI.Box(rect, GUIContent.none);
+            UITheme.DrawPanel(rect);
 
             var line = current.lines[Mathf.Clamp(index, 0, current.lines.Count - 1)];
-            GUI.Label(new Rect(rect.x + 16, rect.y + 10, rect.width - 32, 26),
-                      string.IsNullOrEmpty(line.speaker) ? "" : line.speaker, speakerStyle);
-            GUI.Label(new Rect(rect.x + 16, rect.y + 40, rect.width - 32, rect.height - 70),
-                      line.text ?? "", lineStyle);
-            GUI.Label(new Rect(rect.x, rect.y + rect.height - 22, rect.width - 16, 20),
-                      "E / Space — continue ", hintStyle);
+
+            // Speaker chip
+            if (!string.IsNullOrEmpty(line.speaker))
+            {
+                float chipW = Mathf.Min(280f, GUI.skin.label.CalcSize(new GUIContent(line.speaker)).x + 60f);
+                var chip = new Rect(rect.x + 18, rect.y - 14, chipW, 30);
+                UITheme.DrawSolid(chip, new Color(0.20f, 0.14f, 0.08f, 0.98f));
+                UITheme.DrawSolid(new Rect(chip.x, chip.y + chip.height - 2, chip.width, 2), UITheme.Saffron);
+                GUI.Label(new Rect(chip.x + 14, chip.y, chip.width - 28, chip.height),
+                          line.speaker, UITheme.SpeakerName);
+            }
+
+            // Typewritten body
+            string full = line.text ?? string.Empty;
+            int reveal;
+            if (fullyRevealed) reveal = full.Length;
+            else
+            {
+                float dt = Mathf.Max(0f, Time.unscaledTime - lineStartTime);
+                reveal = Mathf.Clamp(Mathf.FloorToInt(dt * charsPerSecond), 0, full.Length);
+                if (reveal >= full.Length) fullyRevealed = true;
+            }
+            string shown = reveal >= full.Length ? full : full.Substring(0, reveal);
+
+            GUI.Label(new Rect(rect.x + 22, rect.y + 24, rect.width - 44, rect.height - 56),
+                      shown, UITheme.DialogueLine);
+
+            // Continue indicator: blinks only after full text revealed
+            if (fullyRevealed)
+            {
+                float blink = (Mathf.Sin(Time.unscaledTime * 4f) + 1f) * 0.5f;
+                var prev = GUI.color;
+                GUI.color = new Color(1, 1, 1, 0.4f + 0.6f * blink);
+                bool last = index >= current.lines.Count - 1;
+                GUI.Label(new Rect(rect.x, rect.y + rect.height - 26, rect.width - 18, 22),
+                          last ? "▾  E / Space — close" : "▾  E / Space — continue",
+                          UITheme.ContinueHint);
+                GUI.color = prev;
+            }
+            else
+            {
+                GUI.Label(new Rect(rect.x, rect.y + rect.height - 26, rect.width - 18, 22),
+                          "E / Space — skip", UITheme.ContinueHint);
+            }
         }
     }
 }

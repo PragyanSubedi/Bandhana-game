@@ -89,10 +89,12 @@ namespace Bandhana.UI
                           $"{Mathf.RoundToInt(Settings.Volume * 100)}%", sel == IDX_VOLUME);
             y += rowH + 6;
 
-            DrawToggleRow(new Rect(rowX, y, rowW, rowH), "Fullscreen", Settings.Fullscreen, sel == IDX_FULLSCREEN);
+            if (DrawToggleRow(new Rect(rowX, y, rowW, rowH), "Fullscreen", Settings.Fullscreen, sel == IDX_FULLSCREEN))
+            { Settings.SetFullscreen(!Settings.Fullscreen); AudioManager.Instance.Click(); }
             y += rowH + 6;
 
-            DrawToggleRow(new Rect(rowX, y, rowW, rowH), "VSync", Settings.VSync, sel == IDX_VSYNC);
+            if (DrawToggleRow(new Rect(rowX, y, rowW, rowH), "VSync", Settings.VSync, sel == IDX_VSYNC))
+            { Settings.SetVSync(!Settings.VSync); AudioManager.Instance.Click(); }
             y += rowH + 14;
 
             // Resolution (read-only)
@@ -116,6 +118,8 @@ namespace Bandhana.UI
             GUI.color = prev;
         }
 
+        bool dragging;
+
         void DrawSliderRow(Rect r, string label, float v01, string valueLabel, bool selected)
         {
             UITheme.DrawInnerPanel(r);
@@ -123,18 +127,35 @@ namespace Bandhana.UI
 
             GUI.Label(new Rect(r.x + 16, r.y + 6, 160, r.height), label, UITheme.Body);
             var trough = new Rect(r.x + 170, r.y + r.height / 2f - 4, r.width - 250, 8);
+            // Larger hit area for mouse interaction
+            var hit = new Rect(trough.x, trough.y - 10, trough.width, trough.height + 20);
+
             UITheme.DrawSolid(trough, new Color(0.05f, 0.04f, 0.03f, 0.8f));
             UITheme.DrawSolid(new Rect(trough.x, trough.y, trough.width * Mathf.Clamp01(v01), trough.height),
                               UITheme.Saffron);
-            // knob
             float kx = trough.x + trough.width * Mathf.Clamp01(v01) - 6;
             UITheme.DrawSolid(new Rect(kx, trough.y - 4, 12, 16), UITheme.SaffronSoft);
 
             GUI.Label(new Rect(r.x + r.width - 76, r.y + 6, 60, r.height), valueLabel,
                       new GUIStyle(UITheme.Body) { alignment = TextAnchor.MiddleRight });
+
+            var e = Event.current;
+            if (e.type == EventType.MouseDown && hit.Contains(e.mousePosition))
+            { dragging = true; ApplyMouseToVolume(trough, e.mousePosition.x); e.Use(); }
+            else if (e.type == EventType.MouseDrag && dragging)
+            { ApplyMouseToVolume(trough, e.mousePosition.x); e.Use(); }
+            else if (e.type == EventType.MouseUp && dragging)
+            { dragging = false; e.Use(); }
         }
 
-        void DrawToggleRow(Rect r, string label, bool on, bool selected)
+        void ApplyMouseToVolume(Rect trough, float mouseX)
+        {
+            float v = Mathf.Clamp01((mouseX - trough.x) / trough.width);
+            if (!Mathf.Approximately(v, Settings.Volume)) Settings.SetVolume(v);
+        }
+
+        // Returns true if the user clicked the pill — caller flips the value.
+        bool DrawToggleRow(Rect r, string label, bool on, bool selected)
         {
             UITheme.DrawInnerPanel(r);
             if (selected) UITheme.DrawSolid(new Rect(r.x, r.y + r.height - 2, r.width, 2), UITheme.Saffron);
@@ -142,6 +163,9 @@ namespace Bandhana.UI
             GUI.Label(new Rect(r.x + 16, r.y + 6, r.width - 140, r.height), label, UITheme.Body);
 
             var pill = new Rect(r.x + r.width - 92, r.y + r.height / 2f - 12, 72, 24);
+            var e = Event.current;
+            bool clicked = e.type == EventType.MouseDown && pill.Contains(e.mousePosition);
+            if (clicked) e.Use();
             UITheme.DrawSolid(pill, on ? UITheme.SaffronDim : new Color(0.20f, 0.17f, 0.14f, 0.95f));
             float dotX = on ? pill.x + pill.width - 22 : pill.x + 2;
             UITheme.DrawSolid(new Rect(dotX, pill.y + 2, 20, 20),
@@ -152,6 +176,7 @@ namespace Bandhana.UI
                           alignment = TextAnchor.MiddleRight,
                           normal = { textColor = on ? UITheme.SaffronSoft : UITheme.Disabled }
                       });
+            return clicked;
         }
     }
 }

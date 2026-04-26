@@ -119,6 +119,117 @@ namespace Bandhana.EditorTools
             return Sprite.Create(tex, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), Size);
         }
 
+        // Solid floor tile with a soft inner pattern — used for paths and interiors.
+        public static Sprite Floor(Color color)
+        {
+            var tex = new Texture2D(Size, Size, TextureFormat.RGBA32, false)
+            { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            var dark = Darker(color, 0.10f);
+            var light = Lighter(color, 0.06f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    var c = ((x * 7 + y * 13) & 7) == 0 ? light :
+                            ((x + y) & 11) == 0 ? dark : color;
+                    tex.SetPixel(x, y, c);
+                }
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), Size);
+        }
+
+        // Sloped roof tile — top half lighter, bottom half darker, faint shingles.
+        public static Sprite Roof(Color color)
+        {
+            var tex = new Texture2D(Size, Size, TextureFormat.RGBA32, false)
+            { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            var dark = Darker(color, 0.30f);
+            var light = Lighter(color, 0.10f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    var c = y > Size * 0.55f ? light : color;
+                    if ((y % 6) == 0) c = dark;        // shingle line
+                    if (x == 0 || y == 0 || x == Size - 1 || y == Size - 1) c = dark;
+                    tex.SetPixel(x, y, c);
+                }
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), Size);
+        }
+
+        // Wooden door with a brass handle dot.
+        public static Sprite Door(Color color)
+        {
+            var tex = new Texture2D(Size, Size, TextureFormat.RGBA32, false)
+            { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            var dark = Darker(color, 0.45f);
+            var brass = new Color(0.85f, 0.70f, 0.30f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    bool border = x < 3 || x > Size - 4 || y < 3 || y > Size - 4;
+                    bool plank = (x % 8) == 0;
+                    var c = border ? dark : (plank ? Darker(color, 0.20f) : color);
+                    tex.SetPixel(x, y, c);
+                }
+            // Arch top
+            for (int x = 5; x < Size - 5; x++)
+            {
+                int yTop = (Size - 4) - Mathf.Abs(x - Size / 2) / 4;
+                if (yTop < Size) tex.SetPixel(x, yTop, dark);
+            }
+            // Brass handle
+            tex.SetPixel(Size - 9, Size / 2, brass);
+            tex.SetPixel(Size - 9, Size / 2 - 1, brass);
+            tex.SetPixel(Size - 10, Size / 2, brass);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), Size);
+        }
+
+        // Small decor item: a potted plant / cairn / bench.  Picks shape from `kind`.
+        public static Sprite Decor(Color color, int kind)
+        {
+            var tex = new Texture2D(Size, Size, TextureFormat.RGBA32, false)
+            { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            for (int i = 0; i < Size * Size; i++) tex.SetPixel(i % Size, i / Size, new Color(0, 0, 0, 0));
+            var dark = Darker(color, 0.45f);
+            switch (kind % 3)
+            {
+                case 0: // potted plant
+                    var pot = new Color(0.55f, 0.30f, 0.18f);
+                    for (int y = 4; y < 14; y++)
+                        for (int x = 10; x < 22; x++)
+                            tex.SetPixel(x, y, y < 6 ? Darker(pot, 0.4f) : pot);
+                    for (int y = 14; y < 26; y++)
+                        for (int x = 8; x < 24; x++)
+                        {
+                            float dx = x - 16, dy = y - 20;
+                            if (dx * dx + dy * dy < 50) tex.SetPixel(x, y, color);
+                        }
+                    break;
+                case 1: // cairn (3 stones)
+                    for (int y = 4; y < 12; y++)
+                        for (int x = 8; x < 24; x++)
+                            tex.SetPixel(x, y, color);
+                    for (int y = 12; y < 19; y++)
+                        for (int x = 10; x < 22; x++)
+                            tex.SetPixel(x, y, Darker(color, 0.10f));
+                    for (int y = 19; y < 25; y++)
+                        for (int x = 13; x < 19; x++)
+                            tex.SetPixel(x, y, Lighter(color, 0.10f));
+                    break;
+                case 2: // bench
+                    for (int y = 8; y < 12; y++)
+                        for (int x = 4; x < 28; x++) tex.SetPixel(x, y, color);
+                    for (int x = 6; x < 9; x++) for (int y = 4; y < 8; y++) tex.SetPixel(x, y, dark);
+                    for (int x = 23; x < 26; x++) for (int y = 4; y < 8; y++) tex.SetPixel(x, y, dark);
+                    for (int y = 12; y < 18; y++)
+                        for (int x = 4; x < 28; x++) if (((x + y) & 3) == 0) tex.SetPixel(x, y, dark);
+                    break;
+            }
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), Size);
+        }
+
         public static Sprite Transition(Color color)
         {
             var tex = new Texture2D(Size, Size, TextureFormat.RGBA32, false)
@@ -132,6 +243,314 @@ namespace Bandhana.EditorTools
                 }
             tex.Apply();
             return Sprite.Create(tex, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), Size);
+        }
+
+        // ─── Building parts ──────────────────────────────────────────────────
+        // Each tile is rendered as a 32x32 sprite. Buildings are composed of
+        // these in a multi-row layout (foundation → facade → eaves → roof → ridge).
+
+        // Vertical wood-plank wall (used for residential / shop side walls).
+        public static Sprite WallPlank(Color color)
+        {
+            var tex = NewTex();
+            var seam = Darker(color, 0.45f);
+            var grain = Darker(color, 0.18f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    Color c = color;
+                    if (x % 8 == 0) c = seam;                         // plank seam
+                    if (((Hash(x, y * 3) * 31) % 7) < 1) c = grain;  // grain noise
+                    if (y == 0 || y == Size - 1) c = seam;            // top/bottom edge
+                    tex.SetPixel(x, y, c);
+                }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        // Plaster / clay-render wall (used for temple, shrine).
+        public static Sprite WallPlaster(Color color)
+        {
+            var tex = NewTex();
+            var stain = Darker(color, 0.10f);
+            var hairline = Darker(color, 0.28f);
+            var trim = Darker(color, 0.40f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    float n = Hash(x, y);
+                    Color c = color;
+                    if (n < 0.20f) c = stain;
+                    // a few hairline cracks
+                    if ((x == 7 && y > 6 && y < 22 && (y % 3) != 0) ||
+                        (x == 24 && y > 12 && y < 28 && (y % 4) != 0)) c = hairline;
+                    if (y == 0 || y == Size - 1) c = trim;
+                    tex.SetPixel(x, y, c);
+                }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        // Stone foundation course — heavy mortared stones at the base of walls.
+        public static Sprite Foundation(Color color)
+        {
+            var tex = NewTex();
+            var dark = Darker(color, 0.45f);
+            var light = Lighter(color, 0.10f);
+            // Three rows of staggered stones
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    int row = y / 11;                 // 0..2
+                    int offset = (row & 1) * 6;
+                    bool mortar = ((x + offset) % 12) == 0 || (y % 11) == 0;
+                    Color baseC = ((x + offset) / 12 % 2 == 0) ? color : Darker(color, 0.06f);
+                    Color c = mortar ? dark : baseC;
+                    if ((Hash(x, y * 5)) < 0.10f && !mortar) c = light;
+                    tex.SetPixel(x, y, c);
+                }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        // Facade tile that includes a small window with warm interior glow.
+        public static Sprite WallWithWindow(Color wall, Color frame, Color glow)
+        {
+            var tex = NewTex();
+            var seam = Darker(wall, 0.45f);
+            var grain = Darker(wall, 0.18f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    Color c = wall;
+                    if (x % 8 == 0) c = seam;
+                    if (((Hash(x, y * 3) * 31) % 7) < 1) c = grain;
+                    if (y == 0 || y == Size - 1) c = seam;
+                    tex.SetPixel(x, y, c);
+                }
+            // Window aperture
+            const int wx0 = 9, wx1 = 23, wy0 = 11, wy1 = 24;
+            // frame
+            for (int x = wx0 - 1; x <= wx1 + 1; x++)
+            { tex.SetPixel(x, wy0 - 1, frame); tex.SetPixel(x, wy1 + 1, frame); }
+            for (int y = wy0 - 1; y <= wy1 + 1; y++)
+            { tex.SetPixel(wx0 - 1, y, frame); tex.SetPixel(wx1 + 1, y, frame); }
+            // glass + glow
+            for (int y = wy0; y <= wy1; y++)
+                for (int x = wx0; x <= wx1; x++)
+                {
+                    float dx = x - 16, dy = y - 17;
+                    float r = Mathf.Sqrt(dx * dx + dy * dy);
+                    Color g = Color.Lerp(glow, Darker(glow, 0.55f), Mathf.Clamp01(r / 9f));
+                    tex.SetPixel(x, y, g);
+                }
+            // mullions
+            for (int y = wy0; y <= wy1; y++) tex.SetPixel(16, y, frame);
+            for (int x = wx0; x <= wx1; x++) tex.SetPixel(x, 17, frame);
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        // Eave row — visual band that transitions wall to roof. Casts a darker
+        // strip at the bottom (under-eave shadow) and roof color above.
+        public static Sprite Eave(Color roof, Color underShadow)
+        {
+            var tex = NewTex();
+            var dark = Darker(roof, 0.30f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    Color c = y < 6 ? underShadow                       // under-eave shadow
+                            : (y < 10 ? Darker(roof, 0.10f)              // edge of roof
+                            : ((y % 7) == 0 ? dark : roof));             // shingle line
+                    if (y == Size - 1) c = dark;
+                    tex.SetPixel(x, y, c);
+                }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        // Roof shingle tile (interior of building roof) — diagonal shingles.
+        public static Sprite RoofShingle(Color color)
+        {
+            var tex = NewTex();
+            var dark = Darker(color, 0.30f);
+            var light = Lighter(color, 0.12f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    bool seam = (y % 7) == 0;
+                    bool stagger = (((y / 7) & 1) == 0);
+                    bool tileSeam = ((x + (stagger ? 0 : 5)) % 10) == 0;
+                    Color c = color;
+                    if (tileSeam) c = Darker(color, 0.18f);
+                    if (seam) c = dark;
+                    if ((y % 7) == 1) c = light;          // tiny highlight under each seam
+                    tex.SetPixel(x, y, c);
+                }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        // Roof ridge cap — top of the roof with two finial bumps.
+        public static Sprite RoofRidge(Color color, Color finial)
+        {
+            var tex = NewTex();
+            var dark = Darker(color, 0.45f);
+            var light = Lighter(color, 0.10f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    Color c = y < 18 ? color : (y < 24 ? light : dark);
+                    if ((x % 4) == 0 && y < 18) c = Darker(color, 0.22f);
+                    if (y == Size - 1 || y == 17 || y == 23) c = dark;
+                    tex.SetPixel(x, y, c);
+                }
+            // Two finial bumps near the corners
+            for (int dy = 0; dy < 5; dy++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    tex.SetPixel(6  + dx, 24 + dy, finial);
+                    tex.SetPixel(25 + dx, 24 + dy, finial);
+                }
+            }
+            tex.SetPixel(6,  29, Lighter(finial, 0.4f));
+            tex.SetPixel(25, 29, Lighter(finial, 0.4f));
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        // Door frame (left or right of door tile) — wood post.
+        public static Sprite DoorFrame(Color wood, bool isLeft)
+        {
+            var tex = NewTex();
+            var dark = Darker(wood, 0.45f);
+            var light = Lighter(wood, 0.15f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    Color c = wood;
+                    if (((Hash(x, y * 3) * 31) % 7) < 1) c = Darker(wood, 0.18f);
+                    if (y == 0 || y == Size - 1) c = dark;
+                    tex.SetPixel(x, y, c);
+                }
+            // Vertical post on the door side
+            int postX = isLeft ? Size - 6 : 5;
+            for (int y = 4; y < Size - 4; y++)
+            {
+                tex.SetPixel(postX,     y, dark);
+                tex.SetPixel(postX + 1, y, light);
+                tex.SetPixel(postX - 1, y, dark);
+            }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        // Hanging banner above shop door — colored strip with two ties.
+        public static Sprite Banner(Color body, Color trim)
+        {
+            var tex = NewTex();
+            for (int i = 0; i < Size * Size; i++) tex.SetPixel(i % Size, i / Size, new Color(0, 0, 0, 0));
+            // Two ties at top corners
+            for (int y = Size - 6; y < Size; y++)
+            {
+                tex.SetPixel(6,  y, trim);
+                tex.SetPixel(25, y, trim);
+            }
+            // Body
+            for (int y = 6; y < Size - 6; y++)
+                for (int x = 4; x < Size - 4; x++)
+                {
+                    Color c = body;
+                    if (y == 6 || y == Size - 7) c = trim;
+                    if (x == 4 || x == Size - 5) c = trim;
+                    if ((x + y) % 6 == 0) c = Darker(body, 0.15f);
+                    tex.SetPixel(x, y, c);
+                }
+            // Pointed bottom
+            for (int x = 4; x < Size - 4; x++)
+            {
+                int dy = Mathf.Abs(x - Size / 2);
+                for (int y = 4; y < 6 + dy / 2; y++)
+                {
+                    if (x > 4 && x < Size - 5)
+                        tex.SetPixel(x, y, new Color(0, 0, 0, 0));
+                }
+            }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        // String of prayer flags — five colored squares with a string overhead.
+        public static Sprite PrayerFlags(int seed)
+        {
+            var tex = NewTex();
+            for (int i = 0; i < Size * Size; i++) tex.SetPixel(i % Size, i / Size, new Color(0, 0, 0, 0));
+            // String
+            for (int x = 0; x < Size; x++) tex.SetPixel(x, Size - 4, new Color(0.30f, 0.25f, 0.20f, 0.9f));
+            // Five flags, alternating colors
+            Color[] colors = {
+                new Color(0.85f, 0.30f, 0.30f), // red
+                new Color(0.95f, 0.85f, 0.35f), // yellow
+                new Color(0.40f, 0.65f, 0.35f), // green
+                new Color(0.30f, 0.55f, 0.85f), // blue
+                new Color(0.95f, 0.92f, 0.85f), // white
+            };
+            for (int i = 0; i < 5; i++)
+            {
+                int x0 = 1 + i * 6;
+                Color flag = colors[(i + seed) % 5];
+                for (int y = Size - 14; y < Size - 5; y++)
+                    for (int x = x0; x < x0 + 5; x++)
+                    {
+                        Color c = flag;
+                        if (y == Size - 14 || y == Size - 6 || x == x0 || x == x0 + 4) c = Darker(flag, 0.3f);
+                        tex.SetPixel(x, y, c);
+                    }
+            }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        // Small step-stone tile placed in front of a door.
+        public static Sprite Stoop(Color color)
+        {
+            var tex = NewTex();
+            var dark = Darker(color, 0.40f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    Color c = (y > Size / 2) ? Lighter(color, 0.05f) : color;
+                    if (y == Size / 2) c = dark;
+                    if (x == 0 || x == Size - 1 || y == 0 || y == Size - 1) c = dark;
+                    if ((Hash(x * 2, y) < 0.08f)) c = Darker(color, 0.15f);
+                    tex.SetPixel(x, y, c);
+                }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        // ─── Internal helpers ────────────────────────────────────────────────
+        static Texture2D NewTex()
+        {
+            var t = new Texture2D(Size, Size, TextureFormat.RGBA32, false)
+            { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            return t;
+        }
+        static Sprite MakeSprite(Texture2D tex)
+            => Sprite.Create(tex, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), Size);
+
+        // Cheap deterministic hash → [0..1). Used for grain / noise patterns.
+        static float Hash(int x, int y)
+        {
+            unchecked
+            {
+                int n = x * 374761393 + y * 668265263;
+                n = (n ^ (n >> 13)) * 1274126177;
+                n = n ^ (n >> 16);
+                return (n & 0xFFFFFF) / (float)0xFFFFFF;
+            }
         }
 
         static Color Darker (Color c, float f) => new Color(c.r * (1f - f), c.g * (1f - f), c.b * (1f - f), c.a);

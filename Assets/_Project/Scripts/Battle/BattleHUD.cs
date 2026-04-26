@@ -1,113 +1,142 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Bandhana.BondRite;
 using Bandhana.Core;
+using Bandhana.UI;
 
 namespace Bandhana.Battle
 {
-    // IMGUI HUD for M3/M4 — placeholder UI. Will replace with uGUI/UI Toolkit in M7.
     [RequireComponent(typeof(BattleStateMachine))]
     public class BattleHUD : MonoBehaviour
     {
         BattleStateMachine bs;
-        GUIStyle nameStyle, hpStyle, logStyle, btnStyle;
 
-        void Awake()
-        {
-            bs = GetComponent<BattleStateMachine>();
-        }
+        // Animated HP (lerps toward currentHP / maxHP for damage feel)
+        readonly Dictionary<BattleUnit, float> displayHpRatio = new();
+        const float hpLerpRate = 1.4f; // ratio change per second toward target
 
-        // Lazy: BondRiteController is added by BattleStateMachine.Start, after our Awake.
+        // Keyboard selection per state (reset when state changes)
+        BattleState prevState = BattleState.Start;
+        int sel;
+
+        void Awake() { bs = GetComponent<BattleStateMachine>(); }
+
         BondRiteController Bond => GetComponent<BondRiteController>();
 
-        void EnsureStyles()
+        void Update()
         {
-            if (nameStyle != null) return;
-            nameStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 22, fontStyle = FontStyle.Bold,
-                normal = { textColor = Color.white }
-            };
-            hpStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 16,
-                normal = { textColor = new Color(0.85f, 0.95f, 0.85f) }
-            };
-            logStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 17,
-                normal = { textColor = new Color(0.95f, 0.95f, 0.85f) }
-            };
-            btnStyle = new GUIStyle(GUI.skin.button) { fontSize = 17 };
+            UpdateHpAnim(bs.player);
+            UpdateHpAnim(bs.enemy);
+
+            if (bs.state != prevState) { sel = 0; prevState = bs.state; }
+            HandleSelectionInput();
+        }
+
+        void UpdateHpAnim(BattleUnit u)
+        {
+            if (u == null) return;
+            float target = u.HpRatio;
+            if (!displayHpRatio.TryGetValue(u, out var v)) v = target;
+            v = Mathf.MoveTowards(v, target, hpLerpRate * Time.deltaTime);
+            displayHpRatio[u] = v;
+        }
+
+        void HandleSelectionInput()
+        {
+            if (bs.player == null || bs.enemy == null) return;
+            switch (bs.state)
+            {
+                case BattleState.ActionSelect:
+                {
+                    BuildActions(out _, out var callbacks);
+                    // Actions are laid out horizontally — use grid nav so left/right work.
+                    sel = UITheme.NavigateGrid(sel, callbacks.Count, callbacks.Count, null, out bool fired);
+                    if (fired && sel >= 0 && sel < callbacks.Count) callbacks[sel]();
+                    break;
+                }
+                case BattleState.MoveSelect:
+                {
+                    int n = Mathf.Min(bs.player.moves.Count, 4);
+                    sel = UITheme.NavigateGrid(sel, n, 2, null, out bool fired);
+                    if (fired) bs.OnMovePressed(sel);
+                    break;
+                }
+                case BattleState.SwitchSelect:
+                {
+                    var party = GameManager.Instance.party;
+                    int n = Mathf.Min(party.Count, 6);
+                    sel = UITheme.NavigateGrid(sel, n, 3, null, out bool fired);
+                    if (fired) bs.OnSwitchTo(sel);
+                    if (UnityEngine.InputSystem.Keyboard.current != null &&
+                        UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+                        bs.OnSwitchCanceled();
+                    break;
+                }
+            }
+        }
+
+        // Build the action list and a parallel list of callbacks. Used both for keyboard
+        // dispatch and OnGUI drawing so the indices stay in sync.
+        void BuildActions(out List<string> labels, out List<System.Action> callbacks)
+        {
+            labels = new List<string> { "Fight" };
+            callbacks = new List<System.Action> { bs.OnFightPressed };
+            if (!bs.disableBond) { labels.Add("Bond");   callbacks.Add(bs.OnBondPressed); }
+            labels.Add("Switch"); callbacks.Add(bs.OnSwitchPressed);
+            if (!bs.disableFlee) { labels.Add("Flee");   callbacks.Add(bs.OnFleePressed); }
         }
 
         void OnGUI()
         {
-            EnsureStyles();
+            UITheme.Ensure();
 
-            // Diagnostic mode — Start() hasn't initialized the units yet.
             if (bs.player == null || bs.enemy == null)
             {
-                var box = new Rect(40, 40, Screen.width - 80, 200);
-                GUI.Box(box, GUIContent.none);
-                float dy = box.y + 10;
-                GUI.Label(new Rect(box.x + 12, dy, box.width - 24, 26),
-                          "BattleSystem not initialized.", nameStyle);
-                dy += 28;
-                GUI.Label(new Rect(box.x + 12, dy, box.width - 24, 22),
-                          $"playerSpirit = {(bs.playerSpirit != null ? bs.playerSpirit.name : "<null>")}", logStyle); dy += 22;
-                GUI.Label(new Rect(box.x + 12, dy, box.width - 24, 22),
-                          $"enemySpirit  = {(bs.enemySpirit  != null ? bs.enemySpirit.name  : "<null>")}", logStyle); dy += 22;
-                GUI.Label(new Rect(box.x + 12, dy, box.width - 24, 22),
-                          $"typeChart    = {(bs.typeChart    != null ? bs.typeChart.name    : "<null>")}", logStyle); dy += 22;
-                GUI.Label(new Rect(box.x + 12, dy, box.width - 24, 22), "Logs so far:", logStyle); dy += 22;
-                for (int i = 0; i < bs.log.Count; i++)
-                {
-                    GUI.Label(new Rect(box.x + 24, dy, box.width - 36, 22), bs.log[i], logStyle);
-                    dy += 20;
-                }
+                DrawDiagnostic();
                 return;
             }
 
-            // Bottom-up layout: margins, then action / log / player panel stacked, then enemy at top.
             const float margin  = 24f;
-            const float panelH  = 84f;
+            const float panelH  = 96f;
             const float logH    = 110f;
-            const float actionH = 110f;
-            const float gap     = 10f;
-            float panelW = Mathf.Min(420f, Screen.width - margin * 2f);
+            const float actionH = 124f;
+            const float gap     = 12f;
+            float panelW = Mathf.Min(440f, Screen.width - margin * 2f);
 
             float actionY = Screen.height - margin - actionH;
             float logY    = actionY - gap - logH;
             float playerY = logY - gap - panelH;
 
-            DrawUnit(bs.enemy,  new Rect(margin, margin, panelW, panelH));
-            DrawUnit(bs.player, new Rect(Screen.width - margin - panelW, playerY, panelW, panelH));
+            DrawUnit(bs.enemy,  new Rect(margin, margin, panelW, panelH), isEnemy: true);
+            DrawUnit(bs.player, new Rect(Screen.width - margin - panelW, playerY, panelW, panelH), isEnemy: false);
 
-            // Log box (clipped so text can't overflow)
+            // Log box
             var logRect = new Rect(margin, logY, Screen.width - margin * 2f, logH);
-            GUI.Box(logRect, GUIContent.none);
-            GUI.BeginGroup(logRect);
-            float ly = 8f;
+            UITheme.DrawPanel(logRect);
+            float ly = logRect.y + 14f;
             int lines = Mathf.Min(bs.log.Count, 4);
             int start = bs.log.Count - lines;
             for (int i = start; i < bs.log.Count; i++)
             {
-                GUI.Label(new Rect(12, ly, logRect.width - 24, 22), bs.log[i], logStyle);
-                ly += 24f;
+                float age = (bs.log.Count - 1 - i) / 3f;
+                var prev = GUI.color;
+                GUI.color = new Color(1, 1, 1, 1f - age * 0.45f);
+                GUI.Label(new Rect(logRect.x + 18, ly, logRect.width - 36, 22), bs.log[i],
+                          new GUIStyle(UITheme.Body) { fontSize = 16 });
+                GUI.color = prev;
+                ly += 22f;
             }
-            GUI.EndGroup();
 
             // Action panel
             var actionRect = new Rect(margin, actionY, Screen.width - margin * 2f, actionH);
-            GUI.Box(actionRect, GUIContent.none);
+            UITheme.DrawPanel(actionRect);
 
             switch (bs.state)
             {
                 case BattleState.ActionSelect:
                 {
-                    var labelList = new System.Collections.Generic.List<string> { "Fight" };
-                    var actionList = new System.Collections.Generic.List<System.Action> { bs.OnFightPressed };
-                    if (!bs.disableBond) { labelList.Add("Bond"); actionList.Add(bs.OnBondPressed); }
-                    labelList.Add("Switch"); actionList.Add(bs.OnSwitchPressed);
-                    if (!bs.disableFlee) { labelList.Add("Flee"); actionList.Add(bs.OnFleePressed); }
-                    DrawGridButtons(actionRect, labelList.ToArray(), labelList.Count, 1, i => actionList[i]());
+                    BuildActions(out var labels, out var callbacks);
+                    DrawGrid(actionRect, labels.ToArray(), callbacks.Count, 1, callbacks);
                     break;
                 }
 
@@ -115,12 +144,15 @@ namespace Bandhana.Battle
                 {
                     int n = Mathf.Min(bs.player.moves.Count, 4);
                     var labels = new string[n];
+                    var callbacks = new List<System.Action>(n);
                     for (int i = 0; i < n; i++)
                     {
                         var slot = bs.player.moves[i];
-                        labels[i] = $"{slot.move.moveName}  ({slot.currentPP}/{slot.move.pp})";
+                        labels[i] = $"{slot.move.moveName}\n<size=12><color=#cdb988>PP {slot.currentPP}/{slot.move.pp}</color></size>";
+                        int captured = i;
+                        callbacks.Add(() => bs.OnMovePressed(captured));
                     }
-                    DrawGridButtons(actionRect, labels, 2, 2, bs.OnMovePressed);
+                    DrawGrid(actionRect, labels, 2, 2, callbacks, richText: true);
                     break;
                 }
 
@@ -129,14 +161,18 @@ namespace Bandhana.Battle
                     var party = GameManager.Instance.party;
                     int n = Mathf.Min(party.Count, 6);
                     var labels = new string[n];
+                    var callbacks = new List<System.Action>(n);
                     for (int i = 0; i < n; i++)
                     {
                         var p = party[i];
-                        labels[i] = $"{p.spirit.spiritName} Lv {p.level}  {p.currentHP}/{p.MaxHP}";
+                        labels[i] = $"{p.spirit.spiritName} <size=12>Lv {p.level}</size>\n<size=11><color=#cdb988>{p.currentHP}/{p.MaxHP}</color></size>";
+                        int captured = i;
+                        callbacks.Add(() => bs.OnSwitchTo(captured));
                     }
-                    var listRect = new Rect(actionRect.x, actionRect.y, actionRect.width - 100, actionRect.height);
-                    DrawGridButtons(listRect, labels, 3, 2, bs.OnSwitchTo);
-                    if (GUI.Button(new Rect(actionRect.xMax - 90, actionRect.y + 30, 80, 40), "Cancel", btnStyle))
+                    var listRect = new Rect(actionRect.x, actionRect.y, actionRect.width - 110, actionRect.height);
+                    DrawGrid(listRect, labels, 3, 2, callbacks, richText: true);
+                    if (UITheme.ThemedButton(new Rect(actionRect.xMax - 100, actionRect.y + 36, 90, 50),
+                                             "Cancel", false))
                         bs.OnSwitchCanceled();
                     break;
                 }
@@ -145,22 +181,51 @@ namespace Bandhana.Battle
                     var b = Bond;
                     if (b != null) b.DrawOverlay();
                     else GUI.Label(new Rect(actionRect.x + 20, actionRect.y + 35, actionRect.width - 40, 30),
-                                   "Bond rite controller missing.", logStyle);
+                                   "Bond rite controller missing.", UITheme.Body);
                     break;
 
                 case BattleState.ResolveTurn:
-                    GUI.Label(new Rect(actionRect.x + 20, actionRect.y + 35, 400, 30), "...", logStyle);
+                    GUI.Label(new Rect(actionRect.x + 20, actionRect.y + 35, 400, 30),
+                              "...", UITheme.BodyDim);
                     break;
 
                 case BattleState.End:
-                    GUI.Label(new Rect(actionRect.x + 20, actionRect.y + 35, actionRect.width - 40, 30),
-                              "Press SPACE to return.", logStyle);
+                    GUI.Label(new Rect(actionRect.x + 20, actionRect.y + 38, actionRect.width - 40, 30),
+                              "Press SPACE to return.", new GUIStyle(UITheme.Body) {
+                                  alignment = TextAnchor.MiddleCenter,
+                                  normal = { textColor = UITheme.SaffronSoft }
+                              });
                     break;
             }
         }
 
-        // Lay out N buttons in a `cols × rows` grid that fills the given rect with padding.
-        void DrawGridButtons(Rect rect, string[] labels, int cols, int rows, System.Action<int> onClick)
+        void DrawDiagnostic()
+        {
+            var box = new Rect(40, 40, Screen.width - 80, 220);
+            UITheme.DrawPanel(box);
+            float dy = box.y + 16;
+            GUI.Label(new Rect(box.x + 18, dy, box.width - 36, 28),
+                      "BattleSystem not initialized.",
+                      new GUIStyle(UITheme.SectionHeader) {
+                          alignment = TextAnchor.MiddleLeft, fontSize = 22,
+                          normal = { textColor = UITheme.HpBad }
+                      });
+            dy += 32;
+            GUI.Label(new Rect(box.x + 18, dy, box.width - 36, 22),
+                      $"playerSpirit = {(bs.playerSpirit != null ? bs.playerSpirit.name : "<null>")}", UITheme.Body); dy += 22;
+            GUI.Label(new Rect(box.x + 18, dy, box.width - 36, 22),
+                      $"enemySpirit  = {(bs.enemySpirit  != null ? bs.enemySpirit.name  : "<null>")}", UITheme.Body); dy += 22;
+            GUI.Label(new Rect(box.x + 18, dy, box.width - 36, 22),
+                      $"typeChart    = {(bs.typeChart    != null ? bs.typeChart.name    : "<null>")}", UITheme.Body); dy += 26;
+            GUI.Label(new Rect(box.x + 18, dy, box.width - 36, 22), "Logs so far:", UITheme.BodyDim); dy += 22;
+            for (int i = 0; i < bs.log.Count; i++)
+            {
+                GUI.Label(new Rect(box.x + 32, dy, box.width - 56, 22), bs.log[i], UITheme.Body);
+                dy += 20;
+            }
+        }
+
+        void DrawGrid(Rect rect, string[] labels, int cols, int rows, List<System.Action> callbacks, bool richText = false)
         {
             const float pad = 10f;
             float cellW = (rect.width  - pad * (cols + 1)) / cols;
@@ -171,26 +236,69 @@ namespace Bandhana.Battle
                 var r = new Rect(rect.x + pad + c * (cellW + pad),
                                  rect.y + pad + r2 * (cellH + pad),
                                  cellW, cellH);
-                if (GUI.Button(r, labels[i], btnStyle)) onClick(i);
+                bool isSel = i == sel;
+                var style = isSel ? UITheme.GridButtonSelected : UITheme.GridButton;
+                if (richText)
+                {
+                    style = new GUIStyle(style) { richText = true };
+                }
+                if (GUI.Button(r, labels[i], style))
+                {
+                    sel = i;
+                    callbacks[i]();
+                }
             }
         }
 
-        void DrawUnit(BattleUnit u, Rect r)
+        void DrawUnit(BattleUnit u, Rect r, bool isEnemy)
         {
-            GUI.Box(r, GUIContent.none);
-            GUI.Label(new Rect(r.x + 12, r.y + 6, r.width - 24, 26),
-                      $"{u.spirit.spiritName}   Lv {u.level}", nameStyle);
-            GUI.Label(new Rect(r.x + 12, r.y + 36, r.width - 24, 22),
-                      $"HP {u.currentHP} / {u.MaxHP}", hpStyle);
-            var bg = new Rect(r.x + 12, r.y + 64, r.width - 24, 14);
-            GUI.Box(bg, GUIContent.none);
-            var col = u.HpRatio > 0.5f ? new Color(0.45f, 0.85f, 0.45f)
-                    : u.HpRatio > 0.2f ? new Color(0.95f, 0.85f, 0.40f)
-                    :                    new Color(0.90f, 0.35f, 0.35f);
-            var bar = new Rect(bg.x + 1, bg.y + 1, (bg.width - 2) * u.HpRatio, bg.height - 2);
-            var prev = GUI.color; GUI.color = col;
-            GUI.DrawTexture(bar, Texture2D.whiteTexture);
-            GUI.color = prev;
+            UITheme.DrawPanel(r);
+
+            // Side accent strip
+            UITheme.DrawSolid(new Rect(r.x, r.y + 8, 4, r.height - 16),
+                              isEnemy ? UITheme.Crimson : UITheme.Sapphire);
+
+            // Name + level
+            GUI.Label(new Rect(r.x + 18, r.y + 8, r.width - 110, 28),
+                      u.spirit.spiritName,
+                      new GUIStyle(UITheme.Body) {
+                          fontSize = 20, fontStyle = FontStyle.Bold,
+                          normal = { textColor = new Color(0.96f, 0.94f, 0.86f) }
+                      });
+            GUI.Label(new Rect(r.xMax - 90, r.y + 8, 70, 28),
+                      $"Lv {u.level}",
+                      new GUIStyle(UITheme.Body) {
+                          fontSize = 18, fontStyle = FontStyle.Bold,
+                          alignment = TextAnchor.MiddleRight,
+                          normal = { textColor = UITheme.SaffronSoft }
+                      });
+
+            // Type chips
+            float chipX = r.x + 18;
+            if (u.spirit.primaryType != null)
+            {
+                var c1 = new Rect(chipX, r.y + 38, 84, 22);
+                GUI.Box(c1, u.spirit.primaryType.typeName, UITheme.Chip);
+                chipX += c1.width + 6;
+            }
+            if (u.spirit.secondaryType != null)
+            {
+                var c2 = new Rect(chipX, r.y + 38, 84, 22);
+                GUI.Box(c2, u.spirit.secondaryType.typeName, UITheme.Chip);
+            }
+
+            // HP text
+            string hpText = isEnemy ? $"HP" : $"HP {u.currentHP}/{u.MaxHP}";
+            GUI.Label(new Rect(r.xMax - 130, r.y + 38, 110, 22),
+                      hpText,
+                      new GUIStyle(UITheme.Body) {
+                          fontSize = 14, alignment = TextAnchor.MiddleRight,
+                          normal = { textColor = UITheme.Hint }
+                      });
+
+            // Animated HP bar
+            float vis = displayHpRatio.TryGetValue(u, out var v) ? v : u.HpRatio;
+            UITheme.DrawHpBar(new Rect(r.x + 18, r.y + r.height - 22, r.width - 36, 12), vis);
         }
     }
 }
