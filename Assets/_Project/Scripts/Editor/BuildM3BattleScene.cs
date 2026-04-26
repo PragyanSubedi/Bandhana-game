@@ -56,14 +56,16 @@ namespace Bandhana.EditorTools
             var bs   = bsGO.AddComponent<BattleStateMachine>();
             bsGO.AddComponent<BattleHUD>();
 
-            var so = new SerializedObject(bs);
-            so.FindProperty("playerSpirit").objectReferenceValue = damaru;
-            so.FindProperty("enemySpirit").objectReferenceValue  = khyaak;
-            so.FindProperty("typeChart").objectReferenceValue    = chart;
-            so.FindProperty("playerLevel").intValue = 8;
-            so.FindProperty("enemyLevel").intValue  = 6;
-            so.FindProperty("returnSceneName").stringValue = "M1Test";
-            so.ApplyModifiedProperties();
+            // Direct public-field assignment is more reliable than SerializedObject
+            // when the script has been recompiled in the same editor session.
+            bs.playerSpirit    = damaru;
+            bs.enemySpirit     = khyaak;
+            bs.typeChart       = chart;
+            bs.playerLevel     = 8;
+            bs.enemyLevel      = 6;
+            bs.returnSceneName = "M1Test";
+            EditorUtility.SetDirty(bs);
+            EditorSceneManager.MarkSceneDirty(scene);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
 
