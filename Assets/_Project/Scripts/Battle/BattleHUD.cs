@@ -84,36 +84,44 @@ namespace Bandhana.Battle
             switch (bs.state)
             {
                 case BattleState.ActionSelect:
-                    if (GUI.Button(new Rect(actionRect.x + 20,  actionRect.y + 25, 180, 50), "Fight", btnStyle))  bs.OnFightPressed();
-                    if (GUI.Button(new Rect(actionRect.x + 220, actionRect.y + 25, 180, 50), "Bond",  btnStyle))  bs.OnBondPressed();
-                    if (GUI.Button(new Rect(actionRect.x + 420, actionRect.y + 25, 180, 50), "Switch",btnStyle))  bs.OnSwitchPressed();
-                    if (GUI.Button(new Rect(actionRect.x + 620, actionRect.y + 25, 180, 50), "Flee",  btnStyle))  bs.OnFleePressed();
+                    DrawGridButtons(actionRect, new[] { "Fight", "Bond", "Switch", "Flee" }, 4, 1, idx =>
+                    {
+                        if (idx == 0) bs.OnFightPressed();
+                        else if (idx == 1) bs.OnBondPressed();
+                        else if (idx == 2) bs.OnSwitchPressed();
+                        else if (idx == 3) bs.OnFleePressed();
+                    });
                     break;
 
                 case BattleState.MoveSelect:
-                    for (int i = 0; i < bs.player.moves.Count && i < 4; i++)
+                {
+                    int n = Mathf.Min(bs.player.moves.Count, 4);
+                    var labels = new string[n];
+                    for (int i = 0; i < n; i++)
                     {
                         var slot = bs.player.moves[i];
-                        var col = i % 2; var row = i / 2;
-                        var r = new Rect(actionRect.x + 20 + col * 320, actionRect.y + 10 + row * 42, 300, 38);
-                        if (GUI.Button(r, $"{slot.move.moveName}   ({slot.currentPP}/{slot.move.pp})", btnStyle))
-                            bs.OnMovePressed(i);
+                        labels[i] = $"{slot.move.moveName}  ({slot.currentPP}/{slot.move.pp})";
                     }
+                    DrawGridButtons(actionRect, labels, 2, 2, bs.OnMovePressed);
                     break;
+                }
 
                 case BattleState.SwitchSelect:
+                {
                     var party = GameManager.Instance.party;
-                    for (int i = 0; i < party.Count && i < 6; i++)
+                    int n = Mathf.Min(party.Count, 6);
+                    var labels = new string[n];
+                    for (int i = 0; i < n; i++)
                     {
                         var p = party[i];
-                        var col = i % 3; var row = i / 3;
-                        var r = new Rect(actionRect.x + 20 + col * 230, actionRect.y + 10 + row * 42, 220, 38);
-                        var label = $"{p.spirit.spiritName} Lv {p.level}  {p.currentHP}/{p.MaxHP}";
-                        if (GUI.Button(r, label, btnStyle)) bs.OnSwitchTo(i);
+                        labels[i] = $"{p.spirit.spiritName} Lv {p.level}  {p.currentHP}/{p.MaxHP}";
                     }
-                    if (GUI.Button(new Rect(actionRect.xMax - 110, actionRect.y + 10, 90, 30), "Cancel", btnStyle))
+                    var listRect = new Rect(actionRect.x, actionRect.y, actionRect.width - 100, actionRect.height);
+                    DrawGridButtons(listRect, labels, 3, 2, bs.OnSwitchTo);
+                    if (GUI.Button(new Rect(actionRect.xMax - 90, actionRect.y + 30, 80, 40), "Cancel", btnStyle))
                         bs.OnSwitchCanceled();
                     break;
+                }
 
                 case BattleState.BondRite:
                     if (bond != null) bond.DrawOverlay();
@@ -127,6 +135,22 @@ namespace Bandhana.Battle
                     GUI.Label(new Rect(actionRect.x + 20, actionRect.y + 35, actionRect.width - 40, 30),
                               "Press SPACE to return.", logStyle);
                     break;
+            }
+        }
+
+        // Lay out N buttons in a `cols × rows` grid that fills the given rect with padding.
+        void DrawGridButtons(Rect rect, string[] labels, int cols, int rows, System.Action<int> onClick)
+        {
+            const float pad = 10f;
+            float cellW = (rect.width  - pad * (cols + 1)) / cols;
+            float cellH = (rect.height - pad * (rows + 1)) / rows;
+            for (int i = 0; i < labels.Length && i < cols * rows; i++)
+            {
+                int c = i % cols, r2 = i / cols;
+                var r = new Rect(rect.x + pad + c * (cellW + pad),
+                                 rect.y + pad + r2 * (cellH + pad),
+                                 cellW, cellH);
+                if (GUI.Button(r, labels[i], btnStyle)) onClick(i);
             }
         }
 
