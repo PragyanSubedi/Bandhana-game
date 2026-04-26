@@ -9,14 +9,15 @@ namespace Bandhana.Battle
     public class BattleHUD : MonoBehaviour
     {
         BattleStateMachine bs;
-        BondRiteController bond;
         GUIStyle nameStyle, hpStyle, logStyle, btnStyle;
 
         void Awake()
         {
             bs = GetComponent<BattleStateMachine>();
-            bond = GetComponent<BondRiteController>();
         }
+
+        // Lazy: BondRiteController is added by BattleStateMachine.Start, after our Awake.
+        BondRiteController Bond => GetComponent<BondRiteController>();
 
         void EnsureStyles()
         {
@@ -124,7 +125,10 @@ namespace Bandhana.Battle
                 }
 
                 case BattleState.BondRite:
-                    if (bond != null) bond.DrawOverlay();
+                    var b = Bond;
+                    if (b != null) b.DrawOverlay();
+                    else GUI.Label(new Rect(actionRect.x + 20, actionRect.y + 35, actionRect.width - 40, 30),
+                                   "Bond rite controller missing.", logStyle);
                     break;
 
                 case BattleState.ResolveTurn:

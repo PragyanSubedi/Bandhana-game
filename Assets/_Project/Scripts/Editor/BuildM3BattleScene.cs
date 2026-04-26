@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using Bandhana.Battle;
+using Bandhana.BondRite;
 using Bandhana.Data;
 
 namespace Bandhana.EditorTools
@@ -51,9 +52,10 @@ namespace Bandhana.EditorTools
             camGO.AddComponent<AudioListener>();
             camGO.transform.position = new Vector3(0f, 0f, -10f);
 
-            // BattleSystem GameObject
+            // BattleSystem GameObject — add controllers in dependency order.
             var bsGO = new GameObject("BattleSystem");
             var bs   = bsGO.AddComponent<BattleStateMachine>();
+            bsGO.AddComponent<BondRiteController>();
             bsGO.AddComponent<BattleHUD>();
 
             // Direct public-field assignment is more reliable than SerializedObject
