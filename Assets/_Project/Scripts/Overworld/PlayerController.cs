@@ -31,7 +31,7 @@ namespace Bandhana.Overworld
 
         void Update()
         {
-            if (UIState.IsAnyOpen) return;
+            if (UIState.IsAnyOpen || UIState.InputConsumedThisFrame) return;
 
             if (isMoving)
             {

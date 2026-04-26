@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1b77b3898bac999e908216c0f6bf6e3, type: 3}
+  m_Name: Dialogue_KarunaPyre
+  m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
+  lines:
+  - speaker: Karuna-la (memory)
+    text: You stand by the pyre. The smoke rises to no one in particular.
+  - speaker: Karuna-la (memory)
+    text: "When I am gone \u2014 and that will be soon \u2014 take the drum."
+  - speaker: Karuna-la (memory)
+    text: Walk east, until you cannot any longer. Whatever you find, do not force
+      it.
+  - speaker: Karuna-la (memory)
+    text: Sit with it. Hear its rhythm. The bond comes after.

@@ -14,6 +14,7 @@ namespace Bandhana.UI
         DialogueSO current;
         int index;
         bool isPlaying;
+        int playStartFrame = -1;
         public bool IsPlaying => isPlaying;
 
         GUIStyle speakerStyle, lineStyle, hintStyle;
@@ -35,12 +36,19 @@ namespace Bandhana.UI
             current = dialogue;
             index = 0;
             isPlaying = true;
+            playStartFrame = Time.frameCount;
+            // Swallow the trigger key (E) on this frame so DialogueRunner.Update
+            // doesn't instantly advance past the first line.
+            UIState.ConsumeInputThisFrame();
             UIState.Open();
         }
 
         void Update()
         {
             if (!isPlaying) return;
+            // Ignore input on the same frame Play() was called (the press that opened us).
+            if (Time.frameCount == playStartFrame) return;
+
             var kb = Keyboard.current;
             if (kb == null) return;
             if (kb.eKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame)
@@ -59,6 +67,8 @@ namespace Bandhana.UI
         {
             isPlaying = false;
             current = null;
+            // Stop PlayerController from re-interpreting the same key press as a new interaction.
+            UIState.ConsumeInputThisFrame();
             UIState.Close();
         }
 

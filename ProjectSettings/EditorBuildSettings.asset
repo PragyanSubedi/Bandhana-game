@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/_Project/Scenes/MainMenu/MainMenu.unity
+    guid: 05992215a33f6557f96c18bac90b1874
+  - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   - enabled: 1
@@ -14,6 +17,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Battle/M3Battle.unity
     guid: a87463a53eb561f28ab9650f180f9228
+  - enabled: 1
+    path: Assets/_Project/Scenes/Overworld/Village.unity
+    guid: bf9d4d525ad38b5fc929b5c088513a28
+  - enabled: 1
+    path: Assets/_Project/Scenes/Overworld/Foothills.unity
+    guid: 010e8cca791e5e7598af811fb42f80f5
+  - enabled: 1
+    path: Assets/_Project/Scenes/Overworld/Approach.unity
+    guid: 77e17314097ea7b4aa6d417a53fc0dd0
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
