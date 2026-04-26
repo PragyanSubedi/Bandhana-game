@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Bandhana.Overworld
 {
@@ -35,12 +36,14 @@ namespace Bandhana.Overworld
             }
 
             // Cardinal-only input (matches Pokemon feel). Horizontal beats vertical on a tie.
-            float h = Input.GetAxisRaw("Horizontal");
-            float v = Input.GetAxisRaw("Vertical");
+            var kb = Keyboard.current;
+            if (kb == null) return;
 
             Vector2 dir = Vector2.zero;
-            if (Mathf.Abs(h) > 0.01f) dir = new Vector2(Mathf.Sign(h), 0f);
-            else if (Mathf.Abs(v) > 0.01f) dir = new Vector2(0f, Mathf.Sign(v));
+            if (kb.leftArrowKey.isPressed  || kb.aKey.isPressed) dir = Vector2.left;
+            else if (kb.rightArrowKey.isPressed || kb.dKey.isPressed) dir = Vector2.right;
+            else if (kb.downArrowKey.isPressed  || kb.sKey.isPressed) dir = Vector2.down;
+            else if (kb.upArrowKey.isPressed    || kb.wKey.isPressed) dir = Vector2.up;
 
             if (dir != Vector2.zero) TryStep(dir);
         }
