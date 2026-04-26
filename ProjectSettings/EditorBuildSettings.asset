@@ -26,6 +26,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Overworld/Approach.unity
     guid: 77e17314097ea7b4aa6d417a53fc0dd0
+  - enabled: 1
+    path: Assets/_Project/Scenes/MainMenu/Credits.unity
+    guid: 81e6eb2e38d92176588994e88e06832c
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
