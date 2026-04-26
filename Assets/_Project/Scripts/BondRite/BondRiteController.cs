@@ -1,22 +1,20 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Bandhana.Battle;
+using Bandhana.Core;
 
 namespace Bandhana.BondRite
 {
-    // The bond-rite minigame, simplified for M4: rhythm-only.
-    // The player presses SPACE in time with the spirit's heartbeat. Each in-time
-    // tap raises a bond meter; each off-beat press or missed beat lowers it.
-    // Bond succeeds if the meter is >= 70 % after `totalBeats` beats.
-    //
-    // M5+ will add the offering-selection and drum-repair-puzzle stages around this.
+    // The bond-rite minigame: rhythm-only for now. Auto-draws an IMGUI overlay
+    // whenever isActive, regardless of whether it's invoked from a battle or
+    // from an overworld HelpingTrigger.
     public class BondRiteController : MonoBehaviour
     {
         public bool isActive;
-        public bool? result;            // null = pending, true = bonded, false = failed
-        public BattleUnit target;       // the spirit being bonded with
+        public bool? result;
+        public BattleUnit target;
 
-        [Header("Tuning")]
+        [Header("Tuning (overridden by StartRite based on context)")]
         [Range(4, 16)] public int totalBeats = 8;
         [Range(0.4f, 2f)] public float beatPeriod = 1.0f;
         [Range(0.05f, 0.5f)] public float hitWindow = 0.25f;
@@ -25,20 +23,32 @@ namespace Bandhana.BondRite
         public float missPenalty = 12f;
         public float beatMissPenalty = 8f;
 
-        // Runtime
         public float meter;
         public int currentBeat;
         public float beatTimer;
         public string lastFeedback;
         bool registeredHitForCurrentBeat;
+        bool ownsUIState;
 
-        public void StartRite(BattleUnit target)
+        public void StartRite(BattleUnit target, bool helpingMode = false)
         {
             this.target = target;
-            // Difficulty scales with the spirit's remaining HP — weakened spirits are easier.
-            float hpRatio = target != null ? target.HpRatio : 1f;
-            beatPeriod = Mathf.Lerp(0.6f, 1.1f, 1f - hpRatio);
-            requiredAtEnd = Mathf.Lerp(50f, 80f, hpRatio);
+
+            if (helpingMode)
+            {
+                beatPeriod    = 1.1f;
+                requiredAtEnd = 35f;
+                hitGain       = 22f;
+                missPenalty   = 8f;
+            }
+            else
+            {
+                float hpRatio = target != null ? target.HpRatio : 1f;
+                beatPeriod    = Mathf.Lerp(0.6f, 1.1f, 1f - hpRatio);
+                requiredAtEnd = Mathf.Lerp(50f, 80f, hpRatio);
+                hitGain       = 18f;
+                missPenalty   = 12f;
+            }
 
             meter = 35f;
             currentBeat = 0;
@@ -47,6 +57,9 @@ namespace Bandhana.BondRite
             registeredHitForCurrentBeat = false;
             result = null;
             isActive = true;
+
+            UIState.Open();
+            ownsUIState = true;
         }
 
         void Update()
@@ -55,26 +68,16 @@ namespace Bandhana.BondRite
 
             beatTimer += Time.deltaTime;
 
-            // Beat boundary crossed?
             if (beatTimer >= beatPeriod)
             {
-                if (!registeredHitForCurrentBeat)
-                {
-                    meter -= beatMissPenalty;
-                    lastFeedback = "missed a beat.";
-                }
+                if (!registeredHitForCurrentBeat) { meter -= beatMissPenalty; lastFeedback = "missed a beat."; }
                 beatTimer -= beatPeriod;
                 currentBeat++;
                 registeredHitForCurrentBeat = false;
 
-                if (currentBeat >= totalBeats)
-                {
-                    Finish();
-                    return;
-                }
+                if (currentBeat >= totalBeats) { Finish(); return; }
             }
 
-            // Player input
             var kb = Keyboard.current;
             if (kb != null && kb.spaceKey.wasPressedThisFrame)
             {
@@ -85,11 +88,7 @@ namespace Bandhana.BondRite
                     lastFeedback = distance < hitWindow * 0.4f ? "perfect." : "in time.";
                     registeredHitForCurrentBeat = true;
                 }
-                else
-                {
-                    meter -= missPenalty;
-                    lastFeedback = "off-beat.";
-                }
+                else { meter -= missPenalty; lastFeedback = "off-beat."; }
             }
 
             meter = Mathf.Clamp(meter, 0f, 100f);
@@ -101,15 +100,20 @@ namespace Bandhana.BondRite
             isActive = false;
             result = meter >= requiredAtEnd;
             lastFeedback = result.Value ? "the bond holds." : "the spirit slips away.";
+
+            if (ownsUIState) { UIState.Close(); ownsUIState = false; }
         }
 
-        // ── Drawing ──────────────────────────────────────────────────────────
-        // Called from BattleHUD when a rite is active.
+        void OnDisable() { if (ownsUIState) { UIState.Close(); ownsUIState = false; } }
+
+        // Drawn whenever active so the overlay shows in both battle and overworld contexts.
+        void OnGUI() { if (isActive) DrawOverlay(); }
+
         public void DrawOverlay()
         {
             if (target == null) return;
 
-            var rect = new Rect(Screen.width / 2 - 250, Screen.height / 2 - 140, 500, 280);
+            var rect = new Rect(Screen.width / 2f - 250, Screen.height / 2f - 140, 500, 280);
             GUI.Box(rect, GUIContent.none);
 
             var titleStyle = new GUIStyle(GUI.skin.label) {
@@ -126,7 +130,6 @@ namespace Bandhana.BondRite
             GUI.Label(new Rect(rect.x, rect.y + 42, rect.width, 22),
                       $"Beat {Mathf.Min(currentBeat + 1, totalBeats)} / {totalBeats}", bodyStyle);
 
-            // Bond meter
             var bg = new Rect(rect.x + 40, rect.y + 80, rect.width - 80, 22);
             GUI.Box(bg, GUIContent.none);
             var fill = new Rect(bg.x + 1, bg.y + 1, (bg.width - 2) * (meter / 100f), bg.height - 2);
@@ -137,12 +140,12 @@ namespace Bandhana.BondRite
             GUI.Label(new Rect(rect.x, rect.y + 105, rect.width, 22),
                       $"meter {Mathf.RoundToInt(meter)}  /  need {Mathf.RoundToInt(requiredAtEnd)} by end", bodyStyle);
 
-            // Beat indicator — radius pulses with phase
             float phase = beatTimer / beatPeriod;
             float pulseSize = Mathf.Lerp(36f, 70f, 1f - Mathf.Abs(phase - 0.5f) * 2f);
             var dot = new Rect(rect.center.x - pulseSize / 2f, rect.y + 150, pulseSize, pulseSize);
             prev = GUI.color;
-            GUI.color = registeredHitForCurrentBeat ? new Color(0.55f, 0.85f, 0.55f, 0.7f) : new Color(0.85f, 0.85f, 0.95f, 0.7f);
+            GUI.color = registeredHitForCurrentBeat ? new Color(0.55f, 0.85f, 0.55f, 0.7f)
+                                                     : new Color(0.85f, 0.85f, 0.95f, 0.7f);
             GUI.DrawTexture(dot, Texture2D.whiteTexture);
             GUI.color = prev;
 

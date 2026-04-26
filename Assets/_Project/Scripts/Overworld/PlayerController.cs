@@ -5,10 +5,6 @@ using Bandhana.Core;
 
 namespace Bandhana.Overworld
 {
-    // Pokemon-style grid movement: one tile per input, no diagonals,
-    // smooth interpolation between tiles, blocked by 2D colliders on `blockingLayers`.
-    // After arriving at a tile, checks for a SpiritHaunt to trigger an encounter.
-    // Tracks facing for NPC interaction (E key).
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour
     {
@@ -22,13 +18,9 @@ namespace Bandhana.Overworld
 
         void Awake()
         {
-            // Apply pending position from a save load, if any
             if (SaveContext.TryConsume(out var pending))
-            {
                 transform.position = new Vector3(pending.x, pending.y, transform.position.z);
-            }
 
-            // Snap to nearest grid cell on spawn
             transform.position = new Vector3(
                 Mathf.Round(transform.position.x / tileSize) * tileSize,
                 Mathf.Round(transform.position.y / tileSize) * tileSize,
@@ -43,13 +35,8 @@ namespace Bandhana.Overworld
 
             if (isMoving)
             {
-                transform.position = Vector2.MoveTowards(
-                    transform.position, targetPosition, moveSpeed * Time.deltaTime);
-                if ((Vector2)transform.position == targetPosition)
-                {
-                    isMoving = false;
-                    CheckTriggers();
-                }
+                transform.position = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
+                if ((Vector2)transform.position == targetPosition) { isMoving = false; CheckTriggers(); }
                 return;
             }
 
@@ -59,23 +46,16 @@ namespace Bandhana.Overworld
             // Debug
             if (kb.hKey.wasPressedThisFrame) GameManager.Instance.HealAll();
             if (kb.bKey.wasPressedThisFrame && Application.CanStreamedLevelBeLoaded("M3Battle"))
-            {
-                SceneManager.LoadScene("M3Battle"); return;
-            }
+            { SceneManager.LoadScene("M3Battle"); return; }
 
-            // Interact with whatever is on the tile we're facing
             if (kb.eKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame)
-            {
                 if (TryInteract()) return;
-            }
 
-            // Cardinal-only input. Horizontal beats vertical on a tie.
             Vector2 dir = Vector2.zero;
             if (kb.leftArrowKey.isPressed  || kb.aKey.isPressed) dir = Vector2.left;
             else if (kb.rightArrowKey.isPressed || kb.dKey.isPressed) dir = Vector2.right;
             else if (kb.downArrowKey.isPressed  || kb.sKey.isPressed) dir = Vector2.down;
             else if (kb.upArrowKey.isPressed    || kb.wKey.isPressed) dir = Vector2.up;
-
             if (dir != Vector2.zero) { facing = dir; TryStep(dir); }
         }
 
@@ -94,6 +74,16 @@ namespace Bandhana.Overworld
             foreach (var h in hits)
             {
                 if (h.transform == transform) continue;
+
+                var helping = h.GetComponent<HelpingTrigger>();
+                if (helping != null) { helping.Trigger(); return; }
+
+                var flagSet = h.GetComponent<FlagSetterTrigger>();
+                if (flagSet != null) { flagSet.Trigger(); return; }
+
+                var transition = h.GetComponent<SceneTransition>();
+                if (transition != null) { transition.Trigger(); return; }
+
                 var haunt = h.GetComponent<SpiritHaunt>();
                 if (haunt != null) { haunt.Trigger(); return; }
             }
@@ -108,6 +98,8 @@ namespace Bandhana.Overworld
                 if (h.transform == transform) continue;
                 var npc = h.GetComponent<NPC>();
                 if (npc != null) { npc.Interact(); return true; }
+                var bnpc = h.GetComponent<BattleNPC>();
+                if (bnpc != null) { bnpc.Interact(); return true; }
             }
             return false;
         }

@@ -101,14 +101,15 @@ namespace Bandhana.Battle
             switch (bs.state)
             {
                 case BattleState.ActionSelect:
-                    DrawGridButtons(actionRect, new[] { "Fight", "Bond", "Switch", "Flee" }, 4, 1, idx =>
-                    {
-                        if (idx == 0) bs.OnFightPressed();
-                        else if (idx == 1) bs.OnBondPressed();
-                        else if (idx == 2) bs.OnSwitchPressed();
-                        else if (idx == 3) bs.OnFleePressed();
-                    });
+                {
+                    var labelList = new System.Collections.Generic.List<string> { "Fight" };
+                    var actionList = new System.Collections.Generic.List<System.Action> { bs.OnFightPressed };
+                    if (!bs.disableBond) { labelList.Add("Bond"); actionList.Add(bs.OnBondPressed); }
+                    labelList.Add("Switch"); actionList.Add(bs.OnSwitchPressed);
+                    if (!bs.disableFlee) { labelList.Add("Flee"); actionList.Add(bs.OnFleePressed); }
+                    DrawGridButtons(actionRect, labelList.ToArray(), labelList.Count, 1, i => actionList[i]());
                     break;
+                }
 
                 case BattleState.MoveSelect:
                 {

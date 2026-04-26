@@ -4,8 +4,8 @@ using Bandhana.Battle;
 
 namespace Bandhana.Core
 {
-    // Persistent singleton. Holds the player's party and other cross-scene state.
-    // Auto-creates itself on first access — no need to drop it into every scene.
+    // Persistent singleton. Holds the player's party, story flags, and other
+    // cross-scene state. Auto-creates itself on first access.
     public class GameManager : MonoBehaviour
     {
         static GameManager _instance;
@@ -14,10 +14,8 @@ namespace Bandhana.Core
             get
             {
                 if (_instance != null) return _instance;
-
                 _instance = FindFirstObjectByType<GameManager>();
                 if (_instance != null) return _instance;
-
                 var go = new GameObject("GameManager");
                 _instance = go.AddComponent<GameManager>();
                 DontDestroyOnLoad(go);
@@ -27,6 +25,7 @@ namespace Bandhana.Core
 
         public const int MaxParty = 6;
         public readonly List<BattleUnit> party = new();
+        public readonly HashSet<string> flags = new();
 
         void Awake()
         {
@@ -52,5 +51,9 @@ namespace Bandhana.Core
                 foreach (var slot in u.moves) slot.currentPP = slot.move.pp;
             }
         }
+
+        public bool HasFlag(string f) => !string.IsNullOrEmpty(f) && flags.Contains(f);
+        public void SetFlag(string f) { if (!string.IsNullOrEmpty(f)) flags.Add(f); }
+        public void ClearAllProgress() { party.Clear(); flags.Clear(); }
     }
 }

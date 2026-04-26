@@ -12,8 +12,8 @@ namespace Bandhana.Battle
     public enum BattleState { Start, ActionSelect, MoveSelect, SwitchSelect, BondRite, ResolveTurn, End }
 
     // Drives the full battle loop. Pulls the active player unit from
-    // GameManager.party (M4) and the enemy from EncounterContext (M4 spirit-haunts),
-    // falling back to inspector-set fields for the M3 standalone battle scene.
+    // GameManager.party and the enemy from EncounterContext, falling back to
+    // inspector-set fields for the M3 standalone battle scene.
     public class BattleStateMachine : MonoBehaviour
     {
         [Header("Combatants (fallback if not coming from overworld)")]
@@ -31,6 +31,12 @@ namespace Bandhana.Battle
         [Header("Bond-rite")]
         [Range(0f, 1f)] public float bondAvailableHpThreshold = 0.5f;
 
+        // Trainer/boss configuration (filled from EncounterContext on Start)
+        public bool disableBond;
+        public bool disableFlee;
+        public string winSceneName;
+        public string victoryFlag;
+
         // Runtime — read by BattleHUD
         public BattleUnit player;
         public BattleUnit enemy;
@@ -40,25 +46,24 @@ namespace Bandhana.Battle
 
         BondRiteController bondRite;
         bool waitingForReturn;
+        string returnTargetScene;
 
         IEnumerator Start()
         {
-            // Pull encounter from overworld if present
             if (EncounterContext.HasPending)
             {
                 enemySpirit       = EncounterContext.enemySpirit;
                 enemyLevel        = EncounterContext.enemyLevel;
                 returnSceneName   = EncounterContext.returnSceneName;
+                disableBond       = EncounterContext.disableBond;
+                disableFlee       = EncounterContext.disableFlee;
+                winSceneName      = EncounterContext.winSceneName;
+                victoryFlag       = EncounterContext.victoryFlag;
                 EncounterContext.Clear();
             }
 
-            if (enemySpirit == null)
-            {
-                Log("ERROR: no enemy spirit set.");
-                yield break;
-            }
+            if (enemySpirit == null) { Log("ERROR: no enemy spirit set."); yield break; }
 
-            // Player from party (preferred), else from inspector
             var gm = GameManager.Instance;
             player = gm.FirstConscious();
             if (player == null && playerSpirit != null)
@@ -66,14 +71,9 @@ namespace Bandhana.Battle
                 player = new BattleUnit(playerSpirit, playerLevel);
                 gm.TryAddToParty(player);
             }
-            if (player == null)
-            {
-                Log("ERROR: no party member to fight with.");
-                yield break;
-            }
+            if (player == null) { Log("ERROR: no party member to fight with."); yield break; }
 
             enemy = new BattleUnit(enemySpirit, enemyLevel);
-
             bondRite = GetComponent<BondRiteController>() ?? gameObject.AddComponent<BondRiteController>();
 
             Log($"A wild {enemy.spirit.spiritName} appears!");
@@ -85,7 +85,6 @@ namespace Bandhana.Battle
 
         void Update()
         {
-            // Bond-rite finished — handle outcome
             if (state == BattleState.BondRite && bondRite != null && bondRite.result.HasValue)
             {
                 var ok = bondRite.result.Value;
@@ -98,20 +97,17 @@ namespace Bandhana.Battle
             if (kb == null) return;
             if (kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame)
             {
-                if (Application.CanStreamedLevelBeLoaded(returnSceneName))
-                    SceneManager.LoadScene(returnSceneName);
+                if (Application.CanStreamedLevelBeLoaded(returnTargetScene))
+                    SceneManager.LoadScene(returnTargetScene);
             }
         }
 
         // ── Action handlers (from BattleHUD) ──────────────────────────────────
-        public void OnFightPressed()
-        {
-            if (state == BattleState.ActionSelect) state = BattleState.MoveSelect;
-        }
-
+        public void OnFightPressed()  { if (state == BattleState.ActionSelect) state = BattleState.MoveSelect; }
         public void OnFleePressed()
         {
             if (state != BattleState.ActionSelect) return;
+            if (disableFlee) { Log("There is no fleeing this contest."); return; }
             StartCoroutine(EndBattle("Got away safely.", false));
         }
 
@@ -125,11 +121,8 @@ namespace Bandhana.Battle
         public void OnBondPressed()
         {
             if (state != BattleState.ActionSelect) return;
-            if (enemy.HpRatio > bondAvailableHpThreshold)
-            {
-                Log("The spirit is too proud to bond. Weaken it first.");
-                return;
-            }
+            if (disableBond) { Log("This spirit is bound to another. The bond cannot be offered."); return; }
+            if (enemy.HpRatio > bondAvailableHpThreshold) { Log("The spirit is too proud to bond. Weaken it first."); return; }
             state = BattleState.BondRite;
             bondRite.StartRite(enemy);
         }
@@ -153,10 +146,7 @@ namespace Bandhana.Battle
             StartCoroutine(SwitchAndPassTurn(newUnit));
         }
 
-        public void OnSwitchCanceled()
-        {
-            if (state == BattleState.SwitchSelect) state = BattleState.ActionSelect;
-        }
+        public void OnSwitchCanceled() { if (state == BattleState.SwitchSelect) state = BattleState.ActionSelect; }
 
         // ── Turn resolution ──────────────────────────────────────────────────
         IEnumerator ResolveTurn(int playerMoveIdx)
@@ -167,8 +157,7 @@ namespace Bandhana.Battle
             player.moves[playerMoveIdx].currentPP--;
 
             MoveSO enemyMove = null;
-            if (enemy.moves.Count > 0)
-                enemyMove = enemy.moves[Random.Range(0, enemy.moves.Count)].move;
+            if (enemy.moves.Count > 0) enemyMove = enemy.moves[Random.Range(0, enemy.moves.Count)].move;
 
             bool playerFirst = player.Speed >= enemy.Speed;
             if (playerFirst)
@@ -185,7 +174,6 @@ namespace Bandhana.Battle
                 yield return DoAttack(player, enemy, playerMove);
                 if (enemy.IsWithdrawn)  { yield return EndBattle($"{enemy.spirit.spiritName} withdrew to the veil. You won!", true); yield break; }
             }
-
             state = BattleState.ActionSelect;
         }
 
@@ -194,11 +182,7 @@ namespace Bandhana.Battle
             var r = MoveExecutor.Execute(attacker, defender, move, typeChart);
             Log(r.log);
             yield return new WaitForSeconds(0.7f);
-            if (r.damage > 0)
-            {
-                Log($"{defender.spirit.spiritName} took {r.damage} damage.");
-                yield return new WaitForSeconds(0.5f);
-            }
+            if (r.damage > 0) { Log($"{defender.spirit.spiritName} took {r.damage} damage."); yield return new WaitForSeconds(0.5f); }
         }
 
         IEnumerator SwitchAndPassTurn(BattleUnit newUnit)
@@ -209,8 +193,6 @@ namespace Bandhana.Battle
             player = newUnit;
             Log($"Go, {player.spirit.spiritName}!");
             yield return new WaitForSeconds(0.5f);
-
-            // Enemy gets a free turn after a switch
             if (enemy.moves.Count > 0)
             {
                 var enemyMove = enemy.moves[Random.Range(0, enemy.moves.Count)].move;
@@ -224,7 +206,6 @@ namespace Bandhana.Battle
         {
             Log($"{player.spirit.spiritName} withdrew.");
             yield return new WaitForSeconds(0.6f);
-            // Auto-pick next conscious party member
             var next = GameManager.Instance.party.Find(u => !u.IsWithdrawn);
             if (next != null)
             {
@@ -233,24 +214,15 @@ namespace Bandhana.Battle
                 yield return new WaitForSeconds(0.5f);
                 state = BattleState.ActionSelect;
             }
-            else
-            {
-                yield return EndBattle("Your whole party has withdrawn. You lost.", false);
-            }
+            else { yield return EndBattle("Your whole party has withdrawn. You lost.", false); }
         }
 
         IEnumerator ResolveBondOutcome(bool success)
         {
             if (success)
             {
-                if (GameManager.Instance.TryAddToParty(enemy))
-                {
-                    Log($"{enemy.spirit.spiritName} accepted the bond.");
-                }
-                else
-                {
-                    Log($"{enemy.spirit.spiritName} accepted, but your party is full.");
-                }
+                if (GameManager.Instance.TryAddToParty(enemy)) Log($"{enemy.spirit.spiritName} accepted the bond.");
+                else                                            Log($"{enemy.spirit.spiritName} accepted, but your party is full.");
                 yield return new WaitForSeconds(0.7f);
                 yield return EndBattle("The bond holds.", true);
             }
@@ -272,7 +244,15 @@ namespace Bandhana.Battle
         {
             state = BattleState.End;
             Log(finalLog);
-            Log("Press SPACE to return.");
+
+            if (playerWon)
+            {
+                if (!string.IsNullOrEmpty(victoryFlag)) GameManager.Instance.SetFlag(victoryFlag);
+                returnTargetScene = !string.IsNullOrEmpty(winSceneName) ? winSceneName : returnSceneName;
+            }
+            else returnTargetScene = returnSceneName;
+
+            Log("Press SPACE to continue.");
             waitingForReturn = true;
             yield break;
         }

@@ -14,6 +14,7 @@ namespace Bandhana.UI
         DialogueSO current;
         int index;
         bool isPlaying;
+        public bool IsPlaying => isPlaying;
 
         GUIStyle speakerStyle, lineStyle, hintStyle;
 

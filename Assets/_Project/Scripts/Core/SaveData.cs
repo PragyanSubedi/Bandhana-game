@@ -12,6 +12,7 @@ namespace Bandhana.Core
         public float playerX;
         public float playerY;
         public List<PartyMemberData> party = new();
+        public List<string> storyFlags = new();
         public string saveTimestamp;
     }
 

@@ -10,17 +10,11 @@ namespace Bandhana.Core
     public static class SaveSystem
     {
         const string FileName = "bandhana_save.json";
-
         static string Path => System.IO.Path.Combine(Application.persistentDataPath, FileName);
 
         public static bool HasSave() => File.Exists(Path);
+        public static void Delete() { if (File.Exists(Path)) File.Delete(Path); }
 
-        public static void Delete()
-        {
-            if (File.Exists(Path)) File.Delete(Path);
-        }
-
-        // Snapshot the current game state (party + scene + player position).
         public static SaveData Capture(Vector2 playerPos, string sceneName)
         {
             var d = new SaveData
@@ -30,6 +24,7 @@ namespace Bandhana.Core
                 playerY       = playerPos.y,
                 saveTimestamp = DateTime.UtcNow.ToString("o"),
             };
+
             foreach (var u in GameManager.Instance.party)
             {
                 if (u?.spirit == null) continue;
@@ -50,6 +45,8 @@ namespace Bandhana.Core
                 }
                 d.party.Add(pm);
             }
+
+            foreach (var f in GameManager.Instance.flags) d.storyFlags.Add(f);
             return d;
         }
 
@@ -61,28 +58,16 @@ namespace Bandhana.Core
                 Debug.Log($"[Bandhana] Saved to {Path}");
                 return true;
             }
-            catch (Exception e)
-            {
-                Debug.LogError($"[Bandhana] Save failed: {e}");
-                return false;
-            }
+            catch (Exception e) { Debug.LogError($"[Bandhana] Save failed: {e}"); return false; }
         }
 
         public static SaveData Load()
         {
             if (!File.Exists(Path)) return null;
-            try
-            {
-                return JsonUtility.FromJson<SaveData>(File.ReadAllText(Path));
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[Bandhana] Load failed: {e}");
-                return null;
-            }
+            try { return JsonUtility.FromJson<SaveData>(File.ReadAllText(Path)); }
+            catch (Exception e) { Debug.LogError($"[Bandhana] Load failed: {e}"); return null; }
         }
 
-        // Apply save data to GameManager.party + queue scene+position load.
         public static bool ApplyAndLoad(SaveData data)
         {
             if (data == null) return false;
@@ -95,6 +80,7 @@ namespace Bandhana.Core
 
             var gm = GameManager.Instance;
             gm.party.Clear();
+            gm.flags.Clear();
 
             foreach (var pm in data.party)
             {
@@ -114,6 +100,7 @@ namespace Bandhana.Core
                 }
                 gm.party.Add(u);
             }
+            if (data.storyFlags != null) foreach (var f in data.storyFlags) gm.SetFlag(f);
 
             SaveContext.SetPending(new Vector2(data.playerX, data.playerY));
 

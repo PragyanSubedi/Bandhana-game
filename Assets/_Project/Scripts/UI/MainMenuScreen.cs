@@ -7,7 +7,7 @@ namespace Bandhana.UI
     // Title screen for the MainMenu scene. New Game / Continue / Quit.
     public class MainMenuScreen : MonoBehaviour
     {
-        public string newGameSceneName = "M1Test";
+        public string newGameSceneName = "Village";
 
         GUIStyle titleStyle, subtitleStyle, btnStyle, statusStyle;
         string status;
