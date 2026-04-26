@@ -20,15 +20,18 @@ namespace Bandhana.UI
         {
             var kb = Keyboard.current;
             if (kb == null) return;
-            if (kb.pKey.wasPressedThisFrame) Toggle();
+            if (kb.pKey.wasPressedThisFrame)
+            {
+                if (isOpen) Close();
+                else if (!UIState.IsAnyOpen) Open();
+            }
             else if (isOpen && kb.escapeKey.wasPressedThisFrame) Close();
         }
 
         void OnDisable() { if (isOpen) Close(); }
 
-        void Toggle() { if (isOpen) Close(); else Open(); }
-        void Open()  { isOpen = true;  IsAnyMenuOpen = true; }
-        void Close() { isOpen = false; IsAnyMenuOpen = false; }
+        void Open()  { isOpen = true;  IsAnyMenuOpen = true; UIState.Open(); }
+        void Close() { isOpen = false; IsAnyMenuOpen = false; UIState.Close(); }
 
         void EnsureStyles()
         {

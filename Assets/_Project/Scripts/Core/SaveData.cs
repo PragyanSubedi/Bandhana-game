@@ -1,33 +1,31 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Bandhana.Core
 {
     [Serializable]
     public class SaveData
     {
+        public int version = 1;
         public string playerName;
         public string sceneName;
-        public Vector2 playerPosition;
-        public List<PartyMember> party = new();
-        public List<string> storyFlags = new();
-        public int playMinutes;
+        public float playerX;
+        public float playerY;
+        public List<PartyMemberData> party = new();
         public string saveTimestamp;
     }
 
     [Serializable]
-    public class PartyMember
+    public class PartyMemberData
     {
         public string spiritAssetName;
         public int level;
         public int currentHP;
-        public List<MoveState> moves = new();
-        public string nickname;
+        public List<MoveStateData> moves = new();
     }
 
     [Serializable]
-    public class MoveState
+    public class MoveStateData
     {
         public string moveAssetName;
         public int currentPP;

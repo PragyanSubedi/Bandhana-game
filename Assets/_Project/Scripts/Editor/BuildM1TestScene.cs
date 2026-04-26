@@ -9,25 +9,27 @@ using Bandhana.UI;
 
 namespace Bandhana.EditorTools
 {
-    // One-click setup for M1/M4: a small playground with a player, walls,
-    // a SpiritHaunt to trigger an encounter, a PartyBootstrap that gives Damaru,
-    // and the PartyMenu (P key).
+    // One-click setup for M1/M4/M5: a small playground with a player, walls,
+    // a SpiritHaunt to trigger an encounter, an NPC to talk to, a PartyBootstrap
+    // that gives Damaru, and a UIRoot with PartyMenu + DialogueRunner + PauseMenu.
     public static class BuildM1TestScene
     {
         const string ScenePath  = "Assets/_Project/Scenes/Overworld/M1Test.unity";
         const string DamaruPath = "Assets/_Project/Data/Spirits/Spirit_Damaru.asset";
         const string KhyaakPath = "Assets/_Project/Data/Spirits/Spirit_Khyaak.asset";
+        const string DialoguePath = "Assets/_Project/Data/Dialogue/Dialogue_KarunaPyre.asset";
 
         [MenuItem("Bandhana/Build M1 Test Scene")]
         public static void Build()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
+            EnsureMentorDialogueAsset();
 
+            Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
-            // Camera + camera follow
+            // Camera
             var camGO = new GameObject("Main Camera");
             var cam = camGO.AddComponent<Camera>();
             cam.tag = "MainCamera";
@@ -53,11 +55,13 @@ namespace Bandhana.EditorTools
             var follow = camGO.AddComponent<CameraFollow>();
             follow.target = playerGO.transform;
 
-            // UI root — PartyMenu (P key opens) lives DontDestroyOnLoad-style on its own GO
+            // UIRoot — overworld overlays
             var uiGO = new GameObject("UIRoot");
             uiGO.AddComponent<PartyMenu>();
+            uiGO.AddComponent<DialogueRunner>();
+            uiGO.AddComponent<PauseMenu>();
 
-            // Walls — perimeter of a 13×9 area + interior obstacles
+            // Walls
             var walls = new GameObject("Walls").transform;
             for (int x = -7; x <= 7; x++) { Wall(new Vector2(x,  5), walls); Wall(new Vector2(x, -5), walls); }
             for (int y = -4; y <= 4; y++) { Wall(new Vector2(-7, y), walls); Wall(new Vector2(7, y), walls); }
@@ -66,7 +70,7 @@ namespace Bandhana.EditorTools
             Wall(new Vector2(-1,  1), walls);
             Wall(new Vector2( 3, -2), walls);
 
-            // Spirit haunt — Khyaak at (3, 2)
+            // Khyaak haunt
             var khyaak = AssetDatabase.LoadAssetAtPath<SpiritSO>(KhyaakPath);
             if (khyaak != null)
             {
@@ -85,7 +89,20 @@ namespace Bandhana.EditorTools
                 haunt.returnSceneName = "M1Test";
             }
 
-            // PartyBootstrap — gives Damaru on Awake if party is empty
+            // Mentor NPC at (-3, 0) — Karuna-la
+            var dialogue = AssetDatabase.LoadAssetAtPath<DialogueSO>(DialoguePath);
+            var npcGO = new GameObject("NPC_KarunaLa");
+            npcGO.transform.position = new Vector3(-3, 0, 0);
+            var nsr = npcGO.AddComponent<SpriteRenderer>();
+            nsr.sprite = MakeSquareSprite(new Color(0.85f, 0.55f, 0.45f));
+            nsr.sortingOrder = 6;
+            var ncol = npcGO.AddComponent<BoxCollider2D>();
+            ncol.isTrigger = true;
+            var npc = npcGO.AddComponent<NPC>();
+            npc.npcName = "Karuna-la";
+            npc.dialogue = dialogue;
+
+            // PartyBootstrap
             var damaru = AssetDatabase.LoadAssetAtPath<SpiritSO>(DamaruPath);
             if (damaru != null)
             {
@@ -98,12 +115,37 @@ namespace Bandhana.EditorTools
             EditorSceneManager.SaveScene(scene, ScenePath);
             EnsureSceneInBuildSettings(ScenePath);
             EnsureSceneInBuildSettings("Assets/_Project/Scenes/Battle/M3Battle.unity");
+            EnsureSceneInBuildSettings("Assets/_Project/Scenes/MainMenu/MainMenu.unity");
 
-            EditorUtility.DisplayDialog("Bandhana — M1/M4",
+            EditorUtility.DisplayDialog("Bandhana — M1/M4/M5",
                 "Test scene built at:\n" + ScenePath +
-                "\n\nMove with arrows or WASD. Walk onto the cyan tile (Khyaak haunt) to start a battle." +
-                "\nP — open party menu.   H — heal all (debug).   B — force-load M3Battle (legacy).",
+                "\n\nMove with arrows or WASD." +
+                "\n  E — talk to NPC (orange tile, west)" +
+                "\n  Cyan tile — Khyaak encounter" +
+                "\n  P — party    Esc — pause/save    H — heal (debug)",
                 "OK");
+        }
+
+        static void EnsureMentorDialogueAsset()
+        {
+            Directory.CreateDirectory("Assets/_Project/Data/Dialogue");
+            var d = AssetDatabase.LoadAssetAtPath<DialogueSO>(DialoguePath);
+            if (d == null)
+            {
+                d = ScriptableObject.CreateInstance<DialogueSO>();
+                AssetDatabase.CreateAsset(d, DialoguePath);
+            }
+            d.lines.Clear();
+            d.lines.Add(new DialogueLine { speaker = "Karuna-la",
+                text = "You stand by the pyre and the smoke rises to no one in particular." });
+            d.lines.Add(new DialogueLine { speaker = "Karuna-la",
+                text = "The drum is yours now. Walk east, until you cannot any longer." });
+            d.lines.Add(new DialogueLine { speaker = "Karuna-la",
+                text = "Whatever you find — do not force it. Sit with it. Hear its rhythm." });
+            d.lines.Add(new DialogueLine { speaker = "Karuna-la",
+                text = "Press P to see your party. Press Esc to pause or save. Walk into the cyan tile to begin." });
+            EditorUtility.SetDirty(d);
+            AssetDatabase.SaveAssets();
         }
 
         static void Wall(Vector2 pos, Transform parent)

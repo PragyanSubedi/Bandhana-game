@@ -31,6 +31,9 @@ namespace Bandhana.EditorTools
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
+            // Keep BandhanaDB in sync so save/load can resolve these by name.
+            BuildDatabase.Build();
+
             EditorUtility.DisplayDialog("Bandhana — M2",
                 "Built:\n" +
                 $"  • {types.Count} types in {TypesDir}\n" +
