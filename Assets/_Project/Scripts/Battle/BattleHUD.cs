@@ -38,21 +38,21 @@ namespace Bandhana.Battle
             {
                 var box = new Rect(40, 40, Screen.width - 80, 200);
                 GUI.Box(box, GUIContent.none);
-                float y = box.y + 10;
-                GUI.Label(new Rect(box.x + 12, y, box.width - 24, 26),
+                float dy = box.y + 10;
+                GUI.Label(new Rect(box.x + 12, dy, box.width - 24, 26),
                           "BattleSystem not initialized.", nameStyle);
-                y += 28;
-                GUI.Label(new Rect(box.x + 12, y, box.width - 24, 22),
-                          $"playerSpirit = {(bs.playerSpirit != null ? bs.playerSpirit.name : "<null>")}", logStyle); y += 22;
-                GUI.Label(new Rect(box.x + 12, y, box.width - 24, 22),
-                          $"enemySpirit  = {(bs.enemySpirit  != null ? bs.enemySpirit.name  : "<null>")}", logStyle); y += 22;
-                GUI.Label(new Rect(box.x + 12, y, box.width - 24, 22),
-                          $"typeChart    = {(bs.typeChart    != null ? bs.typeChart.name    : "<null>")}", logStyle); y += 22;
-                GUI.Label(new Rect(box.x + 12, y, box.width - 24, 22), "Logs so far:", logStyle); y += 22;
+                dy += 28;
+                GUI.Label(new Rect(box.x + 12, dy, box.width - 24, 22),
+                          $"playerSpirit = {(bs.playerSpirit != null ? bs.playerSpirit.name : "<null>")}", logStyle); dy += 22;
+                GUI.Label(new Rect(box.x + 12, dy, box.width - 24, 22),
+                          $"enemySpirit  = {(bs.enemySpirit  != null ? bs.enemySpirit.name  : "<null>")}", logStyle); dy += 22;
+                GUI.Label(new Rect(box.x + 12, dy, box.width - 24, 22),
+                          $"typeChart    = {(bs.typeChart    != null ? bs.typeChart.name    : "<null>")}", logStyle); dy += 22;
+                GUI.Label(new Rect(box.x + 12, dy, box.width - 24, 22), "Logs so far:", logStyle); dy += 22;
                 for (int i = 0; i < bs.log.Count; i++)
                 {
-                    GUI.Label(new Rect(box.x + 24, y, box.width - 36, 22), bs.log[i], logStyle);
-                    y += 20;
+                    GUI.Label(new Rect(box.x + 24, dy, box.width - 36, 22), bs.log[i], logStyle);
+                    dy += 20;
                 }
                 return;
             }
