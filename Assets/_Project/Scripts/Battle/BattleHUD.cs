@@ -32,7 +32,30 @@ namespace Bandhana.Battle
         void OnGUI()
         {
             EnsureStyles();
-            if (bs.player == null || bs.enemy == null) return;
+
+            // Diagnostic mode — Start() hasn't initialized the units yet.
+            if (bs.player == null || bs.enemy == null)
+            {
+                var box = new Rect(40, 40, Screen.width - 80, 200);
+                GUI.Box(box, GUIContent.none);
+                float y = box.y + 10;
+                GUI.Label(new Rect(box.x + 12, y, box.width - 24, 26),
+                          "BattleSystem not initialized.", nameStyle);
+                y += 28;
+                GUI.Label(new Rect(box.x + 12, y, box.width - 24, 22),
+                          $"playerSpirit = {(bs.playerSpirit != null ? bs.playerSpirit.name : "<null>")}", logStyle); y += 22;
+                GUI.Label(new Rect(box.x + 12, y, box.width - 24, 22),
+                          $"enemySpirit  = {(bs.enemySpirit  != null ? bs.enemySpirit.name  : "<null>")}", logStyle); y += 22;
+                GUI.Label(new Rect(box.x + 12, y, box.width - 24, 22),
+                          $"typeChart    = {(bs.typeChart    != null ? bs.typeChart.name    : "<null>")}", logStyle); y += 22;
+                GUI.Label(new Rect(box.x + 12, y, box.width - 24, 22), "Logs so far:", logStyle); y += 22;
+                for (int i = 0; i < bs.log.Count; i++)
+                {
+                    GUI.Label(new Rect(box.x + 24, y, box.width - 36, 22), bs.log[i], logStyle);
+                    y += 20;
+                }
+                return;
+            }
 
             // Enemy panel — top-left
             DrawUnit(bs.enemy, new Rect(40, 30, 380, 90));
