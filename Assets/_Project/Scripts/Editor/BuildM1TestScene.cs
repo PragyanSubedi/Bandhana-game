@@ -3,15 +3,20 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using Bandhana.Data;
 using Bandhana.Overworld;
+using Bandhana.UI;
 
 namespace Bandhana.EditorTools
 {
-    // One-click setup for M1: builds a small playground scene with a player,
-    // walls, and a follow camera. Adds a menu item under Bandhana/.
+    // One-click setup for M1/M4: a small playground with a player, walls,
+    // a SpiritHaunt to trigger an encounter, a PartyBootstrap that gives Damaru,
+    // and the PartyMenu (P key).
     public static class BuildM1TestScene
     {
-        const string ScenePath = "Assets/_Project/Scenes/Overworld/M1Test.unity";
+        const string ScenePath  = "Assets/_Project/Scenes/Overworld/M1Test.unity";
+        const string DamaruPath = "Assets/_Project/Data/Spirits/Spirit_Damaru.asset";
+        const string KhyaakPath = "Assets/_Project/Data/Spirits/Spirit_Khyaak.asset";
 
         [MenuItem("Bandhana/Build M1 Test Scene")]
         public static void Build()
@@ -22,7 +27,7 @@ namespace Bandhana.EditorTools
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
-            // Camera
+            // Camera + camera follow
             var camGO = new GameObject("Main Camera");
             var cam = camGO.AddComponent<Camera>();
             cam.tag = "MainCamera";
@@ -45,27 +50,59 @@ namespace Bandhana.EditorTools
             playerGO.AddComponent<BoxCollider2D>();
             playerGO.AddComponent<PlayerController>();
 
-            // Camera follows player
             var follow = camGO.AddComponent<CameraFollow>();
-            var camSo = new SerializedObject(follow);
-            camSo.FindProperty("target").objectReferenceValue = playerGO.transform;
-            camSo.ApplyModifiedProperties();
+            follow.target = playerGO.transform;
 
-            // Walls — perimeter of a 13×9 area + a couple interior obstacles
+            // UI root — PartyMenu (P key opens) lives DontDestroyOnLoad-style on its own GO
+            var uiGO = new GameObject("UIRoot");
+            uiGO.AddComponent<PartyMenu>();
+
+            // Walls — perimeter of a 13×9 area + interior obstacles
             var walls = new GameObject("Walls").transform;
             for (int x = -7; x <= 7; x++) { Wall(new Vector2(x,  5), walls); Wall(new Vector2(x, -5), walls); }
             for (int y = -4; y <= 4; y++) { Wall(new Vector2(-7, y), walls); Wall(new Vector2(7, y), walls); }
-            // Interior obstacles (a small "L" and a stray block)
             Wall(new Vector2(-2,  2), walls);
             Wall(new Vector2(-1,  2), walls);
             Wall(new Vector2(-1,  1), walls);
             Wall(new Vector2( 3, -2), walls);
 
-            // Save
+            // Spirit haunt — Khyaak at (3, 2)
+            var khyaak = AssetDatabase.LoadAssetAtPath<SpiritSO>(KhyaakPath);
+            if (khyaak != null)
+            {
+                var hauntGO = new GameObject("SpiritHaunt_Khyaak");
+                hauntGO.transform.position = new Vector3(3, 2, 0);
+                var hsr = hauntGO.AddComponent<SpriteRenderer>();
+                hsr.sprite = MakeSquareSprite(new Color(0.55f, 0.85f, 0.95f));
+                hsr.sortingOrder = 6;
+                var hcol = hauntGO.AddComponent<BoxCollider2D>();
+                hcol.isTrigger = true;
+                var haunt = hauntGO.AddComponent<SpiritHaunt>();
+                haunt.spirit = khyaak;
+                haunt.minLevel = 4;
+                haunt.maxLevel = 7;
+                haunt.battleSceneName = "M3Battle";
+                haunt.returnSceneName = "M1Test";
+            }
+
+            // PartyBootstrap — gives Damaru on Awake if party is empty
+            var damaru = AssetDatabase.LoadAssetAtPath<SpiritSO>(DamaruPath);
+            if (damaru != null)
+            {
+                var bootGO = new GameObject("PartyBootstrap");
+                var boot = bootGO.AddComponent<PartyBootstrap>();
+                boot.startingSpirit = damaru;
+                boot.startingLevel = 8;
+            }
+
             EditorSceneManager.SaveScene(scene, ScenePath);
-            EditorUtility.DisplayDialog("Bandhana — M1",
+            EnsureSceneInBuildSettings(ScenePath);
+            EnsureSceneInBuildSettings("Assets/_Project/Scenes/Battle/M3Battle.unity");
+
+            EditorUtility.DisplayDialog("Bandhana — M1/M4",
                 "Test scene built at:\n" + ScenePath +
-                "\n\nHit ▶ Play. Move with arrows or WASD. You should not pass walls.",
+                "\n\nMove with arrows or WASD. Walk onto the cyan tile (Khyaak haunt) to start a battle." +
+                "\nP — open party menu.   H — heal all (debug).   B — force-load M3Battle (legacy).",
                 "OK");
         }
 
@@ -80,7 +117,14 @@ namespace Bandhana.EditorTools
             go.AddComponent<BoxCollider2D>();
         }
 
-        // 32×32 solid color sprite, point-filtered, 32 PPU → 1 unit = 1 tile.
+        static void EnsureSceneInBuildSettings(string path)
+        {
+            var current = new System.Collections.Generic.List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+            if (current.Exists(s => s.path == path)) return;
+            current.Add(new EditorBuildSettingsScene(path, true));
+            EditorBuildSettings.scenes = current.ToArray();
+        }
+
         static Sprite MakeSquareSprite(Color color)
         {
             var tex = new Texture2D(32, 32, TextureFormat.RGBA32, false)

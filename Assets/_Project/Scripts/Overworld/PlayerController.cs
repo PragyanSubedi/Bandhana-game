@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using Bandhana.Core;
+using Bandhana.UI;
 
 namespace Bandhana.Overworld
 {
     // Pokemon-style grid movement: one tile per input, no diagonals,
     // smooth interpolation between tiles, blocked by 2D colliders on `blockingLayers`.
+    // After arriving at a tile, checks for a SpiritHaunt to trigger an encounter.
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour
     {
@@ -24,29 +27,41 @@ namespace Bandhana.Overworld
                 Mathf.Round(transform.position.y / tileSize) * tileSize,
                 transform.position.z);
             targetPosition = transform.position;
+            // Make sure GameManager exists from the moment the overworld starts.
+            _ = GameManager.Instance;
         }
 
         void Update()
         {
+            // Block movement while a menu is open
+            if (PartyMenu.IsAnyMenuOpen) return;
+
             if (isMoving)
             {
                 transform.position = Vector2.MoveTowards(
                     transform.position, targetPosition, moveSpeed * Time.deltaTime);
-                if ((Vector2)transform.position == targetPosition) isMoving = false;
+                if ((Vector2)transform.position == targetPosition)
+                {
+                    isMoving = false;
+                    CheckTriggers();
+                }
                 return;
             }
 
-            // Cardinal-only input (matches Pokemon feel). Horizontal beats vertical on a tie.
             var kb = Keyboard.current;
             if (kb == null) return;
 
-            // M3 debug: B enters a battle scene if registered in Build Settings.
+            // Debug — heal party
+            if (kb.hKey.wasPressedThisFrame) GameManager.Instance.HealAll();
+
+            // Debug — force-load M3Battle (legacy from M3)
             if (kb.bKey.wasPressedThisFrame && Application.CanStreamedLevelBeLoaded("M3Battle"))
             {
                 SceneManager.LoadScene("M3Battle");
                 return;
             }
 
+            // Cardinal-only input. Horizontal beats vertical on a tie.
             Vector2 dir = Vector2.zero;
             if (kb.leftArrowKey.isPressed  || kb.aKey.isPressed) dir = Vector2.left;
             else if (kb.rightArrowKey.isPressed || kb.dKey.isPressed) dir = Vector2.right;
@@ -60,12 +75,23 @@ namespace Bandhana.Overworld
         {
             Vector2 target = (Vector2)transform.position + dir * tileSize;
 
-            // Slightly smaller than a full tile so we don't self-collide when adjacent
             var hit = Physics2D.OverlapBox(target, Vector2.one * tileSize * 0.8f, 0f, blockingLayers);
-            if (hit != null && hit.transform != transform) return;
+            // Walls block; triggers (haunts) don't.
+            if (hit != null && !hit.isTrigger && hit.transform != transform) return;
 
             targetPosition = target;
             isMoving = true;
+        }
+
+        void CheckTriggers()
+        {
+            var hits = Physics2D.OverlapBoxAll((Vector2)transform.position, Vector2.one * tileSize * 0.4f, 0f);
+            foreach (var h in hits)
+            {
+                if (h.transform == transform) continue;
+                var haunt = h.GetComponent<SpiritHaunt>();
+                if (haunt != null) { haunt.Trigger(); return; }
+            }
         }
     }
 }

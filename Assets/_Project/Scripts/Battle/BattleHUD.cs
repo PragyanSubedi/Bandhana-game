@@ -1,15 +1,22 @@
 using UnityEngine;
+using Bandhana.BondRite;
+using Bandhana.Core;
 
 namespace Bandhana.Battle
 {
-    // IMGUI HUD for M3 — placeholder UI. Will replace with uGUI/UI Toolkit in M7.
+    // IMGUI HUD for M3/M4 — placeholder UI. Will replace with uGUI/UI Toolkit in M7.
     [RequireComponent(typeof(BattleStateMachine))]
     public class BattleHUD : MonoBehaviour
     {
         BattleStateMachine bs;
+        BondRiteController bond;
         GUIStyle nameStyle, hpStyle, logStyle, btnStyle;
 
-        void Awake() => bs = GetComponent<BattleStateMachine>();
+        void Awake()
+        {
+            bs = GetComponent<BattleStateMachine>();
+            bond = GetComponent<BondRiteController>();
+        }
 
         void EnsureStyles()
         {
@@ -57,9 +64,7 @@ namespace Bandhana.Battle
                 return;
             }
 
-            // Enemy panel — top-left
-            DrawUnit(bs.enemy, new Rect(40, 30, 380, 90));
-            // Player panel — bottom-right area, above the action box
+            DrawUnit(bs.enemy,  new Rect(40, 30, 380, 90));
             DrawUnit(bs.player, new Rect(Screen.width - 420, Screen.height - 270, 380, 90));
 
             // Log box
@@ -79,10 +84,10 @@ namespace Bandhana.Battle
             switch (bs.state)
             {
                 case BattleState.ActionSelect:
-                    if (GUI.Button(new Rect(actionRect.x + 20, actionRect.y + 25, 200, 50), "Fight", btnStyle))
-                        bs.OnFightPressed();
-                    if (GUI.Button(new Rect(actionRect.x + 240, actionRect.y + 25, 200, 50), "Flee", btnStyle))
-                        bs.OnFleePressed();
+                    if (GUI.Button(new Rect(actionRect.x + 20,  actionRect.y + 25, 180, 50), "Fight", btnStyle))  bs.OnFightPressed();
+                    if (GUI.Button(new Rect(actionRect.x + 220, actionRect.y + 25, 180, 50), "Bond",  btnStyle))  bs.OnBondPressed();
+                    if (GUI.Button(new Rect(actionRect.x + 420, actionRect.y + 25, 180, 50), "Switch",btnStyle))  bs.OnSwitchPressed();
+                    if (GUI.Button(new Rect(actionRect.x + 620, actionRect.y + 25, 180, 50), "Flee",  btnStyle))  bs.OnFleePressed();
                     break;
 
                 case BattleState.MoveSelect:
@@ -90,12 +95,28 @@ namespace Bandhana.Battle
                     {
                         var slot = bs.player.moves[i];
                         var col = i % 2; var row = i / 2;
-                        var r = new Rect(actionRect.x + 20 + col * 320,
-                                         actionRect.y + 10 + row * 42,
-                                         300, 38);
+                        var r = new Rect(actionRect.x + 20 + col * 320, actionRect.y + 10 + row * 42, 300, 38);
                         if (GUI.Button(r, $"{slot.move.moveName}   ({slot.currentPP}/{slot.move.pp})", btnStyle))
                             bs.OnMovePressed(i);
                     }
+                    break;
+
+                case BattleState.SwitchSelect:
+                    var party = GameManager.Instance.party;
+                    for (int i = 0; i < party.Count && i < 6; i++)
+                    {
+                        var p = party[i];
+                        var col = i % 3; var row = i / 3;
+                        var r = new Rect(actionRect.x + 20 + col * 230, actionRect.y + 10 + row * 42, 220, 38);
+                        var label = $"{p.spirit.spiritName} Lv {p.level}  {p.currentHP}/{p.MaxHP}";
+                        if (GUI.Button(r, label, btnStyle)) bs.OnSwitchTo(i);
+                    }
+                    if (GUI.Button(new Rect(actionRect.xMax - 110, actionRect.y + 10, 90, 30), "Cancel", btnStyle))
+                        bs.OnSwitchCanceled();
+                    break;
+
+                case BattleState.BondRite:
+                    if (bond != null) bond.DrawOverlay();
                     break;
 
                 case BattleState.ResolveTurn:
@@ -116,16 +137,13 @@ namespace Bandhana.Battle
                       $"{u.spirit.spiritName}   Lv {u.level}", nameStyle);
             GUI.Label(new Rect(r.x + 12, r.y + 36, r.width - 24, 22),
                       $"HP {u.currentHP} / {u.MaxHP}", hpStyle);
-
-            // HP bar
             var bg = new Rect(r.x + 12, r.y + 64, r.width - 24, 14);
             GUI.Box(bg, GUIContent.none);
             var col = u.HpRatio > 0.5f ? new Color(0.45f, 0.85f, 0.45f)
                     : u.HpRatio > 0.2f ? new Color(0.95f, 0.85f, 0.40f)
                     :                    new Color(0.90f, 0.35f, 0.35f);
             var bar = new Rect(bg.x + 1, bg.y + 1, (bg.width - 2) * u.HpRatio, bg.height - 2);
-            var prev = GUI.color;
-            GUI.color = col;
+            var prev = GUI.color; GUI.color = col;
             GUI.DrawTexture(bar, Texture2D.whiteTexture);
             GUI.color = prev;
         }
