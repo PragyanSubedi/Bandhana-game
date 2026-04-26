@@ -65,21 +65,37 @@ namespace Bandhana.Battle
                 return;
             }
 
-            DrawUnit(bs.enemy,  new Rect(40, 30, 380, 90));
-            DrawUnit(bs.player, new Rect(Screen.width - 420, Screen.height - 270, 380, 90));
+            // Bottom-up layout: margins, then action / log / player panel stacked, then enemy at top.
+            const float margin  = 24f;
+            const float panelH  = 84f;
+            const float logH    = 110f;
+            const float actionH = 110f;
+            const float gap     = 10f;
+            float panelW = Mathf.Min(420f, Screen.width - margin * 2f);
 
-            // Log box
-            var logRect = new Rect(40, Screen.height - 230, Screen.width - 80, 90);
+            float actionY = Screen.height - margin - actionH;
+            float logY    = actionY - gap - logH;
+            float playerY = logY - gap - panelH;
+
+            DrawUnit(bs.enemy,  new Rect(margin, margin, panelW, panelH));
+            DrawUnit(bs.player, new Rect(Screen.width - margin - panelW, playerY, panelW, panelH));
+
+            // Log box (clipped so text can't overflow)
+            var logRect = new Rect(margin, logY, Screen.width - margin * 2f, logH);
             GUI.Box(logRect, GUIContent.none);
-            float y = logRect.y + 6;
-            for (int i = 0; i < bs.log.Count; i++)
+            GUI.BeginGroup(logRect);
+            float ly = 8f;
+            int lines = Mathf.Min(bs.log.Count, 4);
+            int start = bs.log.Count - lines;
+            for (int i = start; i < bs.log.Count; i++)
             {
-                GUI.Label(new Rect(logRect.x + 12, y, logRect.width - 24, 22), bs.log[i], logStyle);
-                y += 21;
+                GUI.Label(new Rect(12, ly, logRect.width - 24, 22), bs.log[i], logStyle);
+                ly += 24f;
             }
+            GUI.EndGroup();
 
             // Action panel
-            var actionRect = new Rect(40, Screen.height - 130, Screen.width - 80, 100);
+            var actionRect = new Rect(margin, actionY, Screen.width - margin * 2f, actionH);
             GUI.Box(actionRect, GUIContent.none);
 
             switch (bs.state)
