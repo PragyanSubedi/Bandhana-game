@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using Bandhana.Core;
 using Bandhana.Data;
 using Bandhana.Overworld;
 using Bandhana.UI;
@@ -132,6 +133,7 @@ namespace Bandhana.EditorTools
             ui.AddComponent<PartyMenu>();
             ui.AddComponent<DialogueRunner>();
             ui.AddComponent<PauseMenu>();
+            ui.AddComponent<SettingsMenu>();
 
             var walls = new GameObject("Walls").transform;
             for (int x = -7; x <= 7; x++) { Wall(new Vector2(x,  5), walls); Wall(new Vector2(x, -5), walls); }
@@ -180,6 +182,7 @@ namespace Bandhana.EditorTools
             ui.AddComponent<PartyMenu>();
             ui.AddComponent<DialogueRunner>();
             ui.AddComponent<PauseMenu>();
+            ui.AddComponent<SettingsMenu>();
 
             var walls = new GameObject("Walls").transform;
             for (int x = -7; x <= 7; x++) { Wall(new Vector2(x,  5), walls); Wall(new Vector2(x, -5), walls); }
@@ -201,7 +204,7 @@ namespace Bandhana.EditorTools
                 var go = new GameObject("HelpingTrigger_Damaru");
                 go.transform.position = new Vector3(0, 0, 0);
                 var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = MakeSquareSprite(new Color(0.95f, 0.85f, 0.55f));
+                sr.sprite = SpriteFactory.Drum(new Color(0.95f, 0.85f, 0.55f));
                 sr.sortingOrder = 6;
                 var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true;
                 var help = go.AddComponent<HelpingTrigger>();
@@ -220,7 +223,7 @@ namespace Bandhana.EditorTools
                 var go = new GameObject("SpiritHaunt_Khyaak");
                 go.transform.position = new Vector3(4, 2, 0);
                 var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = MakeSquareSprite(new Color(0.55f, 0.85f, 0.95f));
+                sr.sprite = SpriteFactory.Haunt(new Color(0.55f, 0.85f, 0.95f));
                 sr.sortingOrder = 6;
                 var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true;
                 var h = go.AddComponent<SpiritHaunt>();
@@ -256,6 +259,7 @@ namespace Bandhana.EditorTools
             ui.AddComponent<PartyMenu>();
             ui.AddComponent<DialogueRunner>();
             ui.AddComponent<PauseMenu>();
+            ui.AddComponent<SettingsMenu>();
 
             var walls = new GameObject("Walls").transform;
             for (int x = -7; x <= 7; x++) { Wall(new Vector2(x,  5), walls); Wall(new Vector2(x, -5), walls); }
@@ -274,7 +278,7 @@ namespace Bandhana.EditorTools
                 var go = new GameObject("BattleNPC_GateDisciple");
                 go.transform.position = new Vector3(4, 0, 0);
                 var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = MakeSquareSprite(new Color(0.85f, 0.55f, 0.45f));
+                sr.sprite = SpriteFactory.NPC(new Color(0.85f, 0.55f, 0.45f));
                 sr.sortingOrder = 6;
                 var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true;
                 var bn = go.AddComponent<BattleNPC>();
@@ -308,6 +312,7 @@ namespace Bandhana.EditorTools
             BasicCamera(0.05f, 0.04f, 0.10f);
             var ui = new GameObject("Credits");
             ui.AddComponent<CreditsScreen>();
+            ui.AddComponent<SettingsMenu>();
 
             EditorSceneManager.SaveScene(scene, CreditsScenePath);
             EnsureSceneInBuildSettings(CreditsScenePath);
@@ -319,7 +324,7 @@ namespace Bandhana.EditorTools
             var go = new GameObject("Player");
             go.transform.position = pos;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = MakeSquareSprite(new Color(0.95f, 0.85f, 0.55f));
+            sr.sprite = SpriteFactory.Player(new Color(0.95f, 0.85f, 0.55f));
             sr.sortingOrder = 10;
             var rb = go.AddComponent<Rigidbody2D>();
             rb.bodyType = RigidbodyType2D.Kinematic;
@@ -354,7 +359,7 @@ namespace Bandhana.EditorTools
             var go = new GameObject($"NPC_{name.Replace(' ', '_')}");
             go.transform.position = pos;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = MakeSquareSprite(color);
+            sr.sprite = SpriteFactory.NPC(color);
             sr.sortingOrder = 6;
             var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true;
             var npc = go.AddComponent<NPC>();
@@ -368,7 +373,7 @@ namespace Bandhana.EditorTools
             var go = new GameObject($"FlagSetter_{label}");
             go.transform.position = pos;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = MakeSquareSprite(color);
+            sr.sprite = SpriteFactory.Drum(color);
             sr.sortingOrder = 6;
             var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true;
             var fs = go.AddComponent<FlagSetterTrigger>();
@@ -382,7 +387,7 @@ namespace Bandhana.EditorTools
             var go = new GameObject($"Transition_to_{targetScene}");
             go.transform.position = pos;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = MakeSquareSprite(color);
+            sr.sprite = SpriteFactory.Transition(color);
             sr.sortingOrder = 4;
             var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true;
             var st = go.AddComponent<SceneTransition>();
@@ -398,7 +403,7 @@ namespace Bandhana.EditorTools
             go.transform.SetParent(parent);
             go.transform.position = pos;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = MakeSquareSprite(new Color(0.28f, 0.22f, 0.32f));
+            sr.sprite = SpriteFactory.Wall();
             sr.sortingOrder = 5;
             go.AddComponent<BoxCollider2D>();
         }
@@ -411,16 +416,8 @@ namespace Bandhana.EditorTools
             EditorBuildSettings.scenes = current.ToArray();
         }
 
-        static Sprite MakeSquareSprite(Color color)
-        {
-            var tex = new Texture2D(32, 32, TextureFormat.RGBA32, false)
-            { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
-            var pixels = new Color[32 * 32];
-            for (int i = 0; i < pixels.Length; i++) pixels[i] = color;
-            tex.SetPixels(pixels);
-            tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, 32, 32), new Vector2(0.5f, 0.5f), 32f);
-        }
+        // Square sprite kept available for future use; SpriteFactory now does the heavy lifting.
+        static Sprite MakeSquareSprite(Color color) => SpriteFactory.Solid(color);
     }
 }
 #endif

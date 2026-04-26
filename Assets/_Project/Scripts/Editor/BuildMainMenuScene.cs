@@ -35,7 +35,8 @@ namespace Bandhana.EditorTools
             // Title controller
             var ui = new GameObject("MainMenu");
             var screen = ui.AddComponent<MainMenuScreen>();
-            screen.newGameSceneName = "M1Test";
+            screen.newGameSceneName = "Village";
+            ui.AddComponent<SettingsMenu>();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             EnsureSceneFirstInBuildSettings(ScenePath);
