@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c39c4764f2003a1c9f642bef31ec328, type: 3}
+  m_Name: TypeChart
+  m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.TypeChart
+  rows:
+  - attacker: {fileID: 11400000, guid: ffcbea0f3b07e7e8a91dfaa68edaf9d8, type: 2}
+    matchups:
+    - defender: {fileID: 11400000, guid: ecdfb9ca83aa8a7559bfb3172dbb1daf, type: 2}
+      multiplier: 2
+    - defender: {fileID: 11400000, guid: 776a8dfed506989f3b8445af38333ea2, type: 2}
+      multiplier: 0.5
+    - defender: {fileID: 11400000, guid: 0802a0dc0521af2eaae93ae11aa23143, type: 2}
+      multiplier: 2
+  - attacker: {fileID: 11400000, guid: ecdfb9ca83aa8a7559bfb3172dbb1daf, type: 2}
+    matchups:
+    - defender: {fileID: 11400000, guid: ffcbea0f3b07e7e8a91dfaa68edaf9d8, type: 2}
+      multiplier: 0.5
+    - defender: {fileID: 11400000, guid: 776a8dfed506989f3b8445af38333ea2, type: 2}
+      multiplier: 2
+  - attacker: {fileID: 11400000, guid: 776a8dfed506989f3b8445af38333ea2, type: 2}
+    matchups:
+    - defender: {fileID: 11400000, guid: ecdfb9ca83aa8a7559bfb3172dbb1daf, type: 2}
+      multiplier: 0.5
+    - defender: {fileID: 11400000, guid: ffcbea0f3b07e7e8a91dfaa68edaf9d8, type: 2}
+      multiplier: 2
+  - attacker: {fileID: 11400000, guid: 881df6544eda543dcb48dc86e69818a5, type: 2}
+    matchups:
+    - defender: {fileID: 11400000, guid: 90358a2a1970c3a979172a19df408b8d, type: 2}
+      multiplier: 2
+    - defender: {fileID: 11400000, guid: 3fe900e4b0b84781fa86348e114209c2, type: 2}
+      multiplier: 0.5
+  - attacker: {fileID: 11400000, guid: 90358a2a1970c3a979172a19df408b8d, type: 2}
+    matchups:
+    - defender: {fileID: 11400000, guid: 881df6544eda543dcb48dc86e69818a5, type: 2}
+      multiplier: 0.5
+    - defender: {fileID: 11400000, guid: 3fe900e4b0b84781fa86348e114209c2, type: 2}
+      multiplier: 2
+  - attacker: {fileID: 11400000, guid: 3fe900e4b0b84781fa86348e114209c2, type: 2}
+    matchups:
+    - defender: {fileID: 11400000, guid: 90358a2a1970c3a979172a19df408b8d, type: 2}
+      multiplier: 0.5
+    - defender: {fileID: 11400000, guid: 881df6544eda543dcb48dc86e69818a5, type: 2}
+      multiplier: 2
+  - attacker: {fileID: 11400000, guid: 0802a0dc0521af2eaae93ae11aa23143, type: 2}
+    matchups:
+    - defender: {fileID: 11400000, guid: 9753b9dd0e705db56a563ad173f07787, type: 2}
+      multiplier: 2
+    - defender: {fileID: 11400000, guid: ffcbea0f3b07e7e8a91dfaa68edaf9d8, type: 2}
+      multiplier: 0.5
+  - attacker: {fileID: 11400000, guid: 9753b9dd0e705db56a563ad173f07787, type: 2}
+    matchups:
+    - defender: {fileID: 11400000, guid: 0802a0dc0521af2eaae93ae11aa23143, type: 2}
+      multiplier: 0.5

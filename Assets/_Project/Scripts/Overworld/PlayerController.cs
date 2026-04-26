@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace Bandhana.Overworld
 {
@@ -38,6 +39,13 @@ namespace Bandhana.Overworld
             // Cardinal-only input (matches Pokemon feel). Horizontal beats vertical on a tie.
             var kb = Keyboard.current;
             if (kb == null) return;
+
+            // M3 debug: B enters a battle scene if registered in Build Settings.
+            if (kb.bKey.wasPressedThisFrame && Application.CanStreamedLevelBeLoaded("M3Battle"))
+            {
+                SceneManager.LoadScene("M3Battle");
+                return;
+            }
 
             Vector2 dir = Vector2.zero;
             if (kb.leftArrowKey.isPressed  || kb.aKey.isPressed) dir = Vector2.left;

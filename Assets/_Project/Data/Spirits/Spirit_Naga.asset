@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c02459944cb3e065a3aef405eac62f5, type: 3}
+  m_Name: Spirit_Naga
+  m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.SpiritSO
+  spiritName: Naga
+  codexEntry: My lineage coils beneath the lake. I am the river's quiet warning.
+  primaryType: {fileID: 11400000, guid: 9753b9dd0e705db56a563ad173f07787, type: 2}
+  secondaryType: {fileID: 11400000, guid: ffcbea0f3b07e7e8a91dfaa68edaf9d8, type: 2}
+  baseHP: 55
+  baseAttack: 60
+  baseDefense: 50
+  baseSpAttack: 50
+  baseSpDefense: 55
+  baseSpeed: 40
+  learnset:
+  - level: 1
+    move: {fileID: 11400000, guid: 5fb284b70e4f4f567a8eeaaf5af0d139, type: 2}
+  - level: 5
+    move: {fileID: 11400000, guid: 1f5d352c15437fb198fb0e233a17935c, type: 2}
+  - level: 9
+    move: {fileID: 11400000, guid: c6056d7196ed26b74970700220198783, type: 2}
+  balancedEvolution: {fileID: 0}
+  wrathfulEvolution: {fileID: 0}
+  peacefulEvolution: {fileID: 0}
+  evolutionLevel: 0
+  frontSprite: {fileID: 0}
+  backSprite: {fileID: 0}
+  drumCry: {fileID: 0}

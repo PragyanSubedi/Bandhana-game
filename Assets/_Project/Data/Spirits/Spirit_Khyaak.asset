@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c02459944cb3e065a3aef405eac62f5, type: 3}
+  m_Name: Spirit_Khyaak
+  m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.SpiritSO
+  spiritName: Khyaak
+  codexEntry: I am the laughter at the back of the kitchen, the spilled rice, the
+    missing key. Catch me if you can.
+  primaryType: {fileID: 11400000, guid: 90358a2a1970c3a979172a19df408b8d, type: 2}
+  secondaryType: {fileID: 0}
+  baseHP: 35
+  baseAttack: 45
+  baseDefense: 30
+  baseSpAttack: 55
+  baseSpDefense: 35
+  baseSpeed: 80
+  learnset:
+  - level: 1
+    move: {fileID: 11400000, guid: d13939c1651100d64821568606d667b4, type: 2}
+  - level: 3
+    move: {fileID: 11400000, guid: 4a4fc27ce061ce05cbbd99fa624a5384, type: 2}
+  - level: 7
+    move: {fileID: 11400000, guid: 6b0214268600303fc971c0d6d84f2b7b, type: 2}
+  balancedEvolution: {fileID: 0}
+  wrathfulEvolution: {fileID: 0}
+  peacefulEvolution: {fileID: 0}
+  evolutionLevel: 0
+  frontSprite: {fileID: 0}
+  backSprite: {fileID: 0}
+  drumCry: {fileID: 0}

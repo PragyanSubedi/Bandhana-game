@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c02459944cb3e065a3aef405eac62f5, type: 3}
+  m_Name: Spirit_Yeti
+  m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.SpiritSO
+  spiritName: Yeti
+  codexEntry: I do not hide. You simply do not look at the snow long enough.
+  primaryType: {fileID: 11400000, guid: 881df6544eda543dcb48dc86e69818a5, type: 2}
+  secondaryType: {fileID: 0}
+  baseHP: 75
+  baseAttack: 65
+  baseDefense: 70
+  baseSpAttack: 30
+  baseSpDefense: 50
+  baseSpeed: 25
+  learnset:
+  - level: 1
+    move: {fileID: 11400000, guid: 378516d6431ee88458db49fe4387d64a, type: 2}
+  - level: 6
+    move: {fileID: 11400000, guid: 6b0214268600303fc971c0d6d84f2b7b, type: 2}
+  balancedEvolution: {fileID: 0}
+  wrathfulEvolution: {fileID: 0}
+  peacefulEvolution: {fileID: 0}
+  evolutionLevel: 0
+  frontSprite: {fileID: 0}
+  backSprite: {fileID: 0}
+  drumCry: {fileID: 0}
