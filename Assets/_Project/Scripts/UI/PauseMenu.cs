@@ -12,9 +12,12 @@ namespace Bandhana.UI
         bool isOpen;
         string status;
         float statusUntil;
+        float openedAt;
+        int sel;
 
-        GUIStyle titleStyle, btnStyle, statusStyle;
-        Texture2D dimTex;
+        const int IDX_RESUME = 0, IDX_SAVE = 1, IDX_SETTINGS = 2, IDX_MAIN = 3, IDX_QUIT = 4;
+        const int COUNT = 5;
+        static readonly string[] Labels = { "Resume", "Save Game", "Settings", "Main Menu", "Quit Game" };
 
         void Awake() { Settings.Load(); _ = AudioManager.Instance; }
 
@@ -26,53 +29,69 @@ namespace Bandhana.UI
             {
                 if (isOpen) Close();
                 else if (!UIState.IsAnyOpen) Open();
+                return;
             }
+            if (!isOpen) return;
+
+            int prev = sel;
+            sel = UITheme.NavigateVertical(sel, COUNT, null, out bool fired);
+            if (sel != prev) AudioManager.Instance.Click();
+            if (fired) Invoke(sel);
         }
 
         void OnDisable() { if (isOpen) Close(); }
-        void Open()  { isOpen = true;  UIState.Open(); }
+        void Open()  { isOpen = true; openedAt = Time.unscaledTime; sel = IDX_RESUME; UIState.Open(); }
         void Close() { isOpen = false; UIState.Close(); }
 
-        void EnsureStyles()
+        void Invoke(int i)
         {
-            if (titleStyle != null) return;
-            titleStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 28, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.95f, 0.85f, 0.55f) }
-            };
-            btnStyle = new GUIStyle(GUI.skin.button) { fontSize = 18 };
-            statusStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 15, alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.85f, 0.95f, 0.85f) }
-            };
-            dimTex = new Texture2D(1, 1);
-            dimTex.SetPixel(0, 0, new Color(0, 0, 0, 0.65f));
-            dimTex.Apply();
+            AudioManager.Instance.Click();
+            switch (i)
+            {
+                case IDX_RESUME:   Close(); break;
+                case IDX_SAVE:     DoSave(); break;
+                case IDX_SETTINGS: SettingsMenu.Instance?.Open(); break;
+                case IDX_MAIN:     DoMainMenu(); break;
+                case IDX_QUIT:     Application.Quit(); break;
+            }
         }
 
         void OnGUI()
         {
             if (!isOpen) return;
-            EnsureStyles();
+            UITheme.Ensure();
 
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), dimTex);
+            float t = Mathf.Clamp01((Time.unscaledTime - openedAt) / 0.18f);
+            UITheme.DrawDimOverlay(0.72f * t);
 
-            var rect = new Rect(Screen.width / 2f - 180, Screen.height / 2f - 240, 360, 480);
-            GUI.Box(rect, GUIContent.none);
-            GUI.Label(new Rect(rect.x, rect.y + 16, rect.width, 36), "Paused", titleStyle);
+            var rect = new Rect(Screen.width / 2f - 200, Screen.height / 2f - 250, 400, 500);
+            // Slight bounce-in
+            float scale = Mathf.Lerp(0.96f, 1f, t);
+            var center = new Vector2(rect.center.x, rect.center.y);
+            rect = new Rect(center.x - rect.width * scale * 0.5f, center.y - rect.height * scale * 0.5f,
+                            rect.width * scale, rect.height * scale);
 
-            float y = rect.y + 70;
-            const float bh = 50, bw = 280;
+            var prev = GUI.color;
+            GUI.color = new Color(1, 1, 1, t);
+            UITheme.DrawPanel(rect);
+            GUI.Label(new Rect(rect.x, rect.y + 22, rect.width, 36), "Paused", UITheme.SectionHeader);
+            UITheme.DrawDivider(new Rect(rect.x + 40, rect.y + 64, rect.width - 80, 12));
+
+            float y = rect.y + 86;
+            const float bh = 50, bw = 300;
             float bx = rect.x + (rect.width - bw) / 2f;
 
-            if (GUI.Button(new Rect(bx, y, bw, bh), "Resume", btnStyle))    { AudioManager.Instance.Click(); Close(); } y += bh + 12;
-            if (GUI.Button(new Rect(bx, y, bw, bh), "Save Game", btnStyle)) { AudioManager.Instance.Click(); DoSave(); } y += bh + 12;
-            if (GUI.Button(new Rect(bx, y, bw, bh), "Settings", btnStyle))  { AudioManager.Instance.Click(); SettingsMenu.Instance?.Open(); } y += bh + 12;
-            if (GUI.Button(new Rect(bx, y, bw, bh), "Main Menu", btnStyle)) { AudioManager.Instance.Click(); DoMainMenu(); } y += bh + 12;
-            if (GUI.Button(new Rect(bx, y, bw, bh), "Quit Game", btnStyle)) { AudioManager.Instance.Click(); Application.Quit(); }
+            for (int i = 0; i < COUNT; i++)
+            {
+                if (UITheme.ThemedButton(new Rect(bx, y, bw, bh), Labels[i], sel == i))
+                    Invoke(i);
+                y += bh + 10;
+            }
 
             if (Time.unscaledTime < statusUntil && !string.IsNullOrEmpty(status))
-                GUI.Label(new Rect(rect.x, rect.y + rect.height - 30, rect.width, 22), status, statusStyle);
+                GUI.Label(new Rect(rect.x, rect.y + rect.height - 32, rect.width, 22),
+                          status, UITheme.Hint);
+            GUI.color = prev;
         }
 
         void DoSave()

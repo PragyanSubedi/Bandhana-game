@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Bandhana.Core;
 
 namespace Bandhana.UI
@@ -9,8 +10,11 @@ namespace Bandhana.UI
         public static SettingsMenu Instance { get; private set; }
 
         bool isOpen;
-        GUIStyle titleStyle, labelStyle, btnStyle;
-        Texture2D dimTex;
+        float openedAt;
+        int sel;
+
+        const int IDX_VOLUME = 0, IDX_FULLSCREEN = 1, IDX_VSYNC = 2, IDX_CLOSE = 3;
+        const int COUNT = 4;
 
         void Awake()
         {
@@ -22,68 +26,132 @@ namespace Bandhana.UI
         void OnDestroy() { if (Instance == this) Instance = null; }
         void OnDisable() { if (isOpen) Close(); }
 
-        public void Open()  { if (isOpen) return; isOpen = true; UIState.Open(); }
+        public void Open()  { if (isOpen) return; isOpen = true; openedAt = Time.unscaledTime; sel = 0; UIState.Open(); }
         public void Close() { if (!isOpen) return; isOpen = false; UIState.Close(); }
 
-        void EnsureStyles()
+        void Update()
         {
-            if (titleStyle != null) return;
-            titleStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 28, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.95f, 0.85f, 0.55f) }
-            };
-            labelStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 18, normal = { textColor = new Color(0.92f, 0.92f, 0.85f) }
-            };
-            btnStyle = new GUIStyle(GUI.skin.button) { fontSize = 17 };
-            dimTex = new Texture2D(1, 1);
-            dimTex.SetPixel(0, 0, new Color(0, 0, 0, 0.65f));
-            dimTex.Apply();
+            if (!isOpen) return;
+            var kb = Keyboard.current;
+            if (kb == null) return;
+
+            if (kb.escapeKey.wasPressedThisFrame) { AudioManager.Instance.Click(); Close(); return; }
+
+            int prev = sel;
+            // Enter triggers focused row's primary action; arrows on rows 0..2 are reserved for value adjust.
+            sel = UITheme.NavigateVertical(sel, COUNT, null, out bool fired);
+            if (sel != prev) AudioManager.Instance.Click();
+
+            // Left/Right adjusts the selected row when applicable.
+            bool left  = kb.leftArrowKey.wasPressedThisFrame  || kb.aKey.wasPressedThisFrame;
+            bool right = kb.rightArrowKey.wasPressedThisFrame || kb.dKey.wasPressedThisFrame;
+
+            switch (sel)
+            {
+                case IDX_VOLUME:
+                    if (left)  Settings.SetVolume(Mathf.Max(0f, Settings.Volume - 0.05f));
+                    if (right) Settings.SetVolume(Mathf.Min(1f, Settings.Volume + 0.05f));
+                    break;
+                case IDX_FULLSCREEN:
+                    if (fired || left || right) { Settings.SetFullscreen(!Settings.Fullscreen); fired = false; }
+                    break;
+                case IDX_VSYNC:
+                    if (fired || left || right) { Settings.SetVSync(!Settings.VSync); fired = false; }
+                    break;
+                case IDX_CLOSE:
+                    if (fired) { AudioManager.Instance.Click(); Close(); }
+                    break;
+            }
         }
 
         void OnGUI()
         {
             if (!isOpen) return;
-            EnsureStyles();
+            UITheme.Ensure();
 
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), dimTex);
+            float t = Mathf.Clamp01((Time.unscaledTime - openedAt) / 0.18f);
+            UITheme.DrawDimOverlay(0.72f * t);
 
-            var rect = new Rect(Screen.width / 2f - 220, Screen.height / 2f - 200, 440, 400);
-            GUI.Box(rect, GUIContent.none);
-            GUI.Label(new Rect(rect.x, rect.y + 16, rect.width, 36), "Settings", titleStyle);
+            var rect = new Rect(Screen.width / 2f - 240, Screen.height / 2f - 220, 480, 440);
+            var prev = GUI.color;
+            GUI.color = new Color(1, 1, 1, t);
 
-            float y = rect.y + 70;
-            const float rowH = 38;
+            UITheme.DrawPanel(rect);
+            GUI.Label(new Rect(rect.x, rect.y + 22, rect.width, 36), "Settings", UITheme.SectionHeader);
+            UITheme.DrawDivider(new Rect(rect.x + 40, rect.y + 64, rect.width - 80, 12));
 
-            // Volume
-            GUI.Label(new Rect(rect.x + 30, y, 120, rowH), "Volume", labelStyle);
-            float v = GUI.HorizontalSlider(new Rect(rect.x + 160, y + 10, 200, 16), Settings.Volume, 0f, 1f);
-            GUI.Label(new Rect(rect.x + 370, y, 60, rowH), $"{Mathf.RoundToInt(v * 100)}%", labelStyle);
-            if (!Mathf.Approximately(v, Settings.Volume)) Settings.SetVolume(v);
-            y += rowH + 8;
+            float y = rect.y + 92;
+            const float rowH = 56;
+            float rowX = rect.x + 24;
+            float rowW = rect.width - 48;
 
-            // Fullscreen
-            bool fs = GUI.Toggle(new Rect(rect.x + 30, y, 360, rowH), Settings.Fullscreen, "  Fullscreen", labelStyle);
-            if (fs != Settings.Fullscreen) Settings.SetFullscreen(fs);
-            y += rowH + 4;
+            DrawSliderRow(new Rect(rowX, y, rowW, rowH), "Volume", Settings.Volume,
+                          $"{Mathf.RoundToInt(Settings.Volume * 100)}%", sel == IDX_VOLUME);
+            y += rowH + 6;
 
-            // VSync
-            bool vs = GUI.Toggle(new Rect(rect.x + 30, y, 360, rowH), Settings.VSync, "  VSync", labelStyle);
-            if (vs != Settings.VSync) Settings.SetVSync(vs);
-            y += rowH + 8;
+            DrawToggleRow(new Rect(rowX, y, rowW, rowH), "Fullscreen", Settings.Fullscreen, sel == IDX_FULLSCREEN);
+            y += rowH + 6;
 
-            // Resolution (read-only label — real picker is platform-fragile)
-            GUI.Label(new Rect(rect.x + 30, y, rect.width - 60, rowH),
-                      $"Resolution: {Screen.currentResolution.width} x {Screen.currentResolution.height}", labelStyle);
+            DrawToggleRow(new Rect(rowX, y, rowW, rowH), "VSync", Settings.VSync, sel == IDX_VSYNC);
+            y += rowH + 14;
 
-            // Close
-            const float bw = 200, bh = 50;
-            if (GUI.Button(new Rect(rect.x + rect.width / 2f - bw / 2f, rect.y + rect.height - bh - 16, bw, bh),
-                           "Close", btnStyle))
+            // Resolution (read-only)
+            GUI.Label(new Rect(rowX, y, rowW, 24),
+                      $"Resolution    {Screen.currentResolution.width} × {Screen.currentResolution.height}",
+                      UITheme.BodyDim);
+            y += 30;
+
+            const float bw = 200, bh = 48;
+            if (UITheme.ThemedButton(new Rect(rect.x + (rect.width - bw) / 2f,
+                                              rect.y + rect.height - bh - 18, bw, bh),
+                                     "Close", sel == IDX_CLOSE))
             {
                 AudioManager.Instance.Click();
                 Close();
             }
+
+            GUI.Label(new Rect(rect.x, rect.y + rect.height - 92, rect.width, 18),
+                      "↑ ↓ row    •    ← → adjust    •    Enter / Esc", UITheme.Hint);
+
+            GUI.color = prev;
+        }
+
+        void DrawSliderRow(Rect r, string label, float v01, string valueLabel, bool selected)
+        {
+            UITheme.DrawInnerPanel(r);
+            if (selected) UITheme.DrawSolid(new Rect(r.x, r.y + r.height - 2, r.width, 2), UITheme.Saffron);
+
+            GUI.Label(new Rect(r.x + 16, r.y + 6, 160, r.height), label, UITheme.Body);
+            var trough = new Rect(r.x + 170, r.y + r.height / 2f - 4, r.width - 250, 8);
+            UITheme.DrawSolid(trough, new Color(0.05f, 0.04f, 0.03f, 0.8f));
+            UITheme.DrawSolid(new Rect(trough.x, trough.y, trough.width * Mathf.Clamp01(v01), trough.height),
+                              UITheme.Saffron);
+            // knob
+            float kx = trough.x + trough.width * Mathf.Clamp01(v01) - 6;
+            UITheme.DrawSolid(new Rect(kx, trough.y - 4, 12, 16), UITheme.SaffronSoft);
+
+            GUI.Label(new Rect(r.x + r.width - 76, r.y + 6, 60, r.height), valueLabel,
+                      new GUIStyle(UITheme.Body) { alignment = TextAnchor.MiddleRight });
+        }
+
+        void DrawToggleRow(Rect r, string label, bool on, bool selected)
+        {
+            UITheme.DrawInnerPanel(r);
+            if (selected) UITheme.DrawSolid(new Rect(r.x, r.y + r.height - 2, r.width, 2), UITheme.Saffron);
+
+            GUI.Label(new Rect(r.x + 16, r.y + 6, r.width - 140, r.height), label, UITheme.Body);
+
+            var pill = new Rect(r.x + r.width - 92, r.y + r.height / 2f - 12, 72, 24);
+            UITheme.DrawSolid(pill, on ? UITheme.SaffronDim : new Color(0.20f, 0.17f, 0.14f, 0.95f));
+            float dotX = on ? pill.x + pill.width - 22 : pill.x + 2;
+            UITheme.DrawSolid(new Rect(dotX, pill.y + 2, 20, 20),
+                              on ? UITheme.SaffronSoft : new Color(0.45f, 0.40f, 0.32f));
+            GUI.Label(new Rect(pill.x - 60, pill.y - 1, 50, 26),
+                      on ? "ON" : "OFF",
+                      new GUIStyle(UITheme.Body) {
+                          alignment = TextAnchor.MiddleRight,
+                          normal = { textColor = on ? UITheme.SaffronSoft : UITheme.Disabled }
+                      });
         }
     }
 }

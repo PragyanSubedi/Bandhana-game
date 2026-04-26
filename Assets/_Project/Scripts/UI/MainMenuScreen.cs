@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Bandhana.Core;
 
@@ -9,74 +10,95 @@ namespace Bandhana.UI
     {
         public string newGameSceneName = "Village";
 
-        GUIStyle titleStyle, subtitleStyle, btnStyle, statusStyle, footerStyle;
         string status;
         float startTime;
+        int sel;
+
+        const int IDX_NEW = 0, IDX_CONTINUE = 1, IDX_SETTINGS = 2, IDX_QUIT = 3;
+        const int COUNT = 4;
 
         void Awake() { Settings.Load(); _ = AudioManager.Instance; startTime = Time.unscaledTime; }
 
-        void EnsureStyles()
+        bool IsEnabled(int i) => i != IDX_CONTINUE || SaveSystem.HasSave();
+
+        void Update()
         {
-            if (titleStyle != null) return;
-            titleStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 72, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.95f, 0.85f, 0.55f) }
-            };
-            subtitleStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 22, fontStyle = FontStyle.Italic, alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.85f, 0.85f, 0.9f) }
-            };
-            btnStyle = new GUIStyle(GUI.skin.button) { fontSize = 20 };
-            statusStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 14, alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.9f, 0.85f, 0.55f) }
-            };
-            footerStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 12, alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.55f, 0.55f, 0.55f) }
-            };
+            int prev = sel;
+            sel = UITheme.NavigateVertical(sel, COUNT, IsEnabled, out bool fired);
+            if (sel != prev) AudioManager.Instance.Click();
+            if (fired) Invoke(sel);
+        }
+
+        void Invoke(int i)
+        {
+            AudioManager.Instance.Click();
+            switch (i)
+            {
+                case IDX_NEW:      DoNewGame(); break;
+                case IDX_CONTINUE: DoContinue(); break;
+                case IDX_SETTINGS: SettingsMenu.Instance?.Open(); break;
+                case IDX_QUIT:     Application.Quit(); break;
+            }
         }
 
         void OnGUI()
         {
-            EnsureStyles();
+            UITheme.Ensure();
             float w = Screen.width, h = Screen.height;
 
-            // Title fade-in
-            float tElapsed = Time.unscaledTime - startTime;
-            float titleAlpha = Mathf.Clamp01(tElapsed / 0.7f);
-            float subtitleAlpha = Mathf.Clamp01((tElapsed - 0.6f) / 0.7f);
+            // Subtle vignette using the dim texture for ambience even without a backdrop
+            UITheme.DrawSolid(new Rect(0, 0, w, h), new Color(0.06f, 0.04f, 0.03f, 0.55f));
 
+            float tElapsed = Time.unscaledTime - startTime;
+            float titleAlpha    = Mathf.Clamp01(tElapsed / 0.7f);
+            float subtitleAlpha = Mathf.Clamp01((tElapsed - 0.5f) / 0.7f);
+            float menuAlpha     = Mathf.Clamp01((tElapsed - 0.9f) / 0.6f);
+
+            // Title with subtle shadow + saffron glow
             var prev = GUI.color;
+            GUI.color = new Color(0, 0, 0, 0.65f * titleAlpha);
+            GUI.Label(new Rect(3, h * 0.16f + 3, w, 110), "Bandhana", UITheme.Title);
             GUI.color = new Color(1, 1, 1, titleAlpha);
-            GUI.Label(new Rect(0, h * 0.16f, w, 90), "Bandhana", titleStyle);
+            GUI.Label(new Rect(0, h * 0.16f, w, 110), "Bandhana", UITheme.Title);
+
             GUI.color = new Color(1, 1, 1, subtitleAlpha);
-            GUI.Label(new Rect(0, h * 0.30f, w, 30), "Eight Petals of the Mandala", subtitleStyle);
+            GUI.Label(new Rect(0, h * 0.30f, w, 30), "Eight Petals of the Mandala", UITheme.Subtitle);
+
+            // Decorative divider under subtitle
+            UITheme.DrawDivider(new Rect(w / 2f - 200, h * 0.36f, 400, 14));
             GUI.color = prev;
 
-            const float bw = 320, bh = 56, bgap = 14;
+            const float bw = 340, bh = 56, bgap = 14;
             float bx = w / 2f - bw / 2f;
-            float by = h * 0.48f;
+            float by = h * 0.46f;
 
-            if (GUI.Button(new Rect(bx, by, bw, bh), "New Game", btnStyle)) { AudioManager.Instance.Click(); DoNewGame(); } by += bh + bgap;
+            GUI.color = new Color(1, 1, 1, menuAlpha);
+
+            if (UITheme.ThemedButton(new Rect(bx, by, bw, bh), "New Game", sel == IDX_NEW))
+                Invoke(IDX_NEW);
+            by += bh + bgap;
 
             bool hasSave = SaveSystem.HasSave();
-            GUI.enabled = hasSave;
-            if (GUI.Button(new Rect(bx, by, bw, bh), hasSave ? "Continue" : "Continue (no save)", btnStyle))
-            { AudioManager.Instance.Click(); DoContinue(); }
-            GUI.enabled = true;
+            if (UITheme.ThemedButton(new Rect(bx, by, bw, bh),
+                                     hasSave ? "Continue" : "Continue (no save)",
+                                     sel == IDX_CONTINUE, hasSave))
+                Invoke(IDX_CONTINUE);
             by += bh + bgap;
 
-            if (GUI.Button(new Rect(bx, by, bw, bh), "Settings", btnStyle))
-            { AudioManager.Instance.Click(); SettingsMenu.Instance?.Open(); }
+            if (UITheme.ThemedButton(new Rect(bx, by, bw, bh), "Settings", sel == IDX_SETTINGS))
+                Invoke(IDX_SETTINGS);
             by += bh + bgap;
 
-            if (GUI.Button(new Rect(bx, by, bw, bh), "Quit", btnStyle))
-            { AudioManager.Instance.Click(); Application.Quit(); }
+            if (UITheme.ThemedButton(new Rect(bx, by, bw, bh), "Quit", sel == IDX_QUIT))
+                Invoke(IDX_QUIT);
+
+            GUI.color = prev;
 
             if (!string.IsNullOrEmpty(status))
-                GUI.Label(new Rect(0, h - 60, w, 22), status, statusStyle);
-            GUI.Label(new Rect(0, h - 30, w, 22), "naiomi studio  •  vertical slice", footerStyle);
+                GUI.Label(new Rect(0, h - 60, w, 22), status, UITheme.Hint);
+            GUI.Label(new Rect(0, h - 30, w, 22),
+                      "↑ ↓ to navigate    •    Enter to select    •    naiomi studio  •  vertical slice",
+                      UITheme.Hint);
         }
 
         void DoNewGame()

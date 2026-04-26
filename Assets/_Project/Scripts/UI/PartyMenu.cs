@@ -11,8 +11,8 @@ namespace Bandhana.UI
         public static bool IsAnyMenuOpen { get; private set; }
 
         bool isOpen;
-        GUIStyle titleStyle, nameStyle, bodyStyle, hintStyle;
-        Texture2D dimTex;
+        float openedAt;
+        int sel;
 
         void Awake() { _ = GameManager.Instance; }
 
@@ -24,86 +24,121 @@ namespace Bandhana.UI
             {
                 if (isOpen) Close();
                 else if (!UIState.IsAnyOpen) Open();
+                return;
             }
-            else if (isOpen && kb.escapeKey.wasPressedThisFrame) Close();
+            if (!isOpen) return;
+            if (kb.escapeKey.wasPressedThisFrame) { Close(); return; }
+
+            int count = GameManager.Instance.party.Count;
+            if (count > 0)
+            {
+                int prev = sel;
+                sel = UITheme.NavigateVertical(sel, count, null, out _);
+                if (sel != prev) AudioManager.Instance.Click();
+            }
         }
 
         void OnDisable() { if (isOpen) Close(); }
 
-        void Open()  { isOpen = true;  IsAnyMenuOpen = true; UIState.Open(); }
+        void Open()  { isOpen = true; IsAnyMenuOpen = true; openedAt = Time.unscaledTime; sel = 0; UIState.Open(); }
         void Close() { isOpen = false; IsAnyMenuOpen = false; UIState.Close(); }
-
-        void EnsureStyles()
-        {
-            if (titleStyle != null) return;
-            titleStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 26, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.95f, 0.85f, 0.55f) }
-            };
-            nameStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 20, fontStyle = FontStyle.Bold,
-                normal = { textColor = Color.white }
-            };
-            bodyStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 16,
-                normal = { textColor = new Color(0.85f, 0.95f, 0.85f) }
-            };
-            hintStyle = new GUIStyle(GUI.skin.label) {
-                fontSize = 14, alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.75f, 0.75f, 0.75f) }
-            };
-            dimTex = new Texture2D(1, 1); dimTex.SetPixel(0, 0, new Color(0, 0, 0, 0.7f)); dimTex.Apply();
-        }
 
         void OnGUI()
         {
             if (!isOpen) return;
-            EnsureStyles();
+            UITheme.Ensure();
 
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), dimTex);
+            float t = Mathf.Clamp01((Time.unscaledTime - openedAt) / 0.18f);
+            UITheme.DrawDimOverlay(0.72f * t);
 
             var party = GameManager.Instance.party;
-            var rect = new Rect(Screen.width / 2 - 280, 60, 560, Screen.height - 120);
-            GUI.Box(rect, GUIContent.none);
-            GUI.Label(new Rect(rect.x, rect.y + 10, rect.width, 40),
-                      $"Party    ({party.Count} / {GameManager.MaxParty})", titleStyle);
+            var rect = new Rect(Screen.width / 2f - 320, 50, 640, Screen.height - 100);
 
-            float y = rect.y + 60;
+            var prev = GUI.color;
+            GUI.color = new Color(1, 1, 1, t);
+            UITheme.DrawPanel(rect);
+
+            GUI.Label(new Rect(rect.x, rect.y + 22, rect.width, 36),
+                      $"Party    {party.Count} / {GameManager.MaxParty}", UITheme.SectionHeader);
+            UITheme.DrawDivider(new Rect(rect.x + 60, rect.y + 64, rect.width - 120, 12));
+
+            float y = rect.y + 92;
+
             if (party.Count == 0)
             {
-                GUI.Label(new Rect(rect.x + 20, y + 10, rect.width - 40, 30),
-                          "your party is empty.", bodyStyle);
+                GUI.Label(new Rect(rect.x + 24, y + 10, rect.width - 48, 60),
+                          "Your party is empty.\nFind spirits in the wilds and form a bond.",
+                          new GUIStyle(UITheme.Body) {
+                              alignment = TextAnchor.MiddleCenter,
+                              normal = { textColor = UITheme.Disabled }
+                          });
             }
             else
             {
-                foreach (var u in party)
+                const float cardH = 92, cardGap = 10;
+                for (int i = 0; i < party.Count; i++)
                 {
-                    var card = new Rect(rect.x + 20, y, rect.width - 40, 80);
-                    GUI.Box(card, GUIContent.none);
-                    GUI.Label(new Rect(card.x + 14, card.y + 6, card.width - 28, 28),
-                              $"{u.spirit.spiritName}    Lv {u.level}", nameStyle);
-                    var primary = u.spirit.primaryType != null ? u.spirit.primaryType.typeName : "—";
-                    var secondary = u.spirit.secondaryType != null ? " / " + u.spirit.secondaryType.typeName : "";
-                    GUI.Label(new Rect(card.x + 14, card.y + 38, card.width - 28, 22),
-                              $"HP {u.currentHP} / {u.MaxHP}    {primary}{secondary}", bodyStyle);
+                    var u = party[i];
+                    var card = new Rect(rect.x + 24, y, rect.width - 48, cardH);
+                    bool selected = i == sel;
 
-                    // HP bar
-                    var bg = new Rect(card.x + 14, card.y + 62, card.width - 28, 12);
-                    GUI.Box(bg, GUIContent.none);
-                    var col = u.HpRatio > 0.5f ? new Color(0.45f, 0.85f, 0.45f)
-                            : u.HpRatio > 0.2f ? new Color(0.95f, 0.85f, 0.40f)
-                            :                    new Color(0.90f, 0.35f, 0.35f);
-                    var bar = new Rect(bg.x + 1, bg.y + 1, (bg.width - 2) * u.HpRatio, bg.height - 2);
-                    var prev = GUI.color; GUI.color = col;
-                    GUI.DrawTexture(bar, Texture2D.whiteTexture);
-                    GUI.color = prev;
+                    if (selected)
+                    {
+                        UITheme.DrawSolid(new Rect(card.x - 4, card.y - 4, card.width + 8, card.height + 8),
+                                          new Color(UITheme.Saffron.r, UITheme.Saffron.g, UITheme.Saffron.b, 0.18f));
+                    }
+                    UITheme.DrawInnerPanel(card);
+                    if (selected)
+                        UITheme.DrawSolid(new Rect(card.x, card.y, 4, card.height), UITheme.Saffron);
 
-                    y += 90;
+                    // Name row
+                    GUI.Label(new Rect(card.x + 18, card.y + 8, card.width - 36, 26),
+                              u.spirit.spiritName,
+                              new GUIStyle(UITheme.Body) {
+                                  fontSize = 20, fontStyle = FontStyle.Bold,
+                                  normal = { textColor = selected ? UITheme.SaffronSoft : new Color(0.96f, 0.94f, 0.86f) }
+                              });
+                    GUI.Label(new Rect(card.xMax - 90, card.y + 8, 70, 26),
+                              $"Lv {u.level}",
+                              new GUIStyle(UITheme.Body) {
+                                  alignment = TextAnchor.MiddleRight,
+                                  fontStyle = FontStyle.Bold,
+                                  normal = { textColor = UITheme.SaffronSoft }
+                              });
+
+                    // Type chips
+                    float chipX = card.x + 18;
+                    if (u.spirit.primaryType != null)
+                    {
+                        var c1 = new Rect(chipX, card.y + 38, 88, 22);
+                        GUI.Box(c1, u.spirit.primaryType.typeName, UITheme.Chip);
+                        chipX += c1.width + 6;
+                    }
+                    if (u.spirit.secondaryType != null)
+                    {
+                        var c2 = new Rect(chipX, card.y + 38, 88, 22);
+                        GUI.Box(c2, u.spirit.secondaryType.typeName, UITheme.Chip);
+                    }
+
+                    // HP text + bar
+                    GUI.Label(new Rect(card.xMax - 130, card.y + 38, 110, 22),
+                              $"HP {u.currentHP} / {u.MaxHP}",
+                              new GUIStyle(UITheme.Body) {
+                                  alignment = TextAnchor.MiddleRight, fontSize = 14,
+                                  normal = { textColor = UITheme.Hint }
+                              });
+                    UITheme.DrawHpBar(new Rect(card.x + 18, card.y + cardH - 22, card.width - 36, 12),
+                                      u.HpRatio);
+
+                    y += cardH + cardGap;
                 }
             }
 
             GUI.Label(new Rect(rect.x, rect.y + rect.height - 30, rect.width, 22),
-                      "P or ESC to close    •    H heals all (debug)", hintStyle);
+                      "↑ ↓ navigate    •    P / Esc close    •    H heals all (debug)",
+                      UITheme.Hint);
+
+            GUI.color = prev;
         }
     }
 }
