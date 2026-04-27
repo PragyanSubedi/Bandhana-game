@@ -293,7 +293,7 @@ namespace Bandhana.Battle
                       hpText,
                       new GUIStyle(UITheme.Body) {
                           fontSize = 14, alignment = TextAnchor.MiddleRight,
-                          normal = { textColor = UITheme.Hint }
+                          normal = { textColor = UITheme.HintColor }
                       });
 
             // Animated HP bar

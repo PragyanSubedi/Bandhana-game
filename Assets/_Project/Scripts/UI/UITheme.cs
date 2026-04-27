@@ -17,7 +17,7 @@ namespace Bandhana.UI
         public static readonly Color Parchment   = new(0.97f, 0.92f, 0.78f);
         public static readonly Color InkDark     = new(0.10f, 0.07f, 0.05f, 0.96f);
         public static readonly Color InkSoft     = new(0.16f, 0.12f, 0.10f, 0.92f);
-        public static readonly Color Hint        = new(0.74f, 0.68f, 0.55f);
+        public static readonly Color HintColor   = new(0.74f, 0.68f, 0.55f);
         public static readonly Color Disabled    = new(0.50f, 0.46f, 0.38f);
         public static readonly Color HpGood      = new(0.42f, 0.80f, 0.42f);
         public static readonly Color HpWarn      = new(0.95f, 0.78f, 0.32f);
@@ -97,7 +97,7 @@ namespace Bandhana.UI
             Hint = new GUIStyle {
                 fontSize = 13, alignment = TextAnchor.MiddleCenter,
                 fontStyle = FontStyle.Italic,
-                normal = { textColor = UITheme.Hint },
+                normal = { textColor = HintColor },
             };
 
             Panel = StyleFromTex(PanelTex, 14, new RectOffset(16, 16, 16, 16));

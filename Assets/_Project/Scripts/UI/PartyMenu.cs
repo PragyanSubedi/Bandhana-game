@@ -125,7 +125,7 @@ namespace Bandhana.UI
                               $"HP {u.currentHP} / {u.MaxHP}",
                               new GUIStyle(UITheme.Body) {
                                   alignment = TextAnchor.MiddleRight, fontSize = 14,
-                                  normal = { textColor = UITheme.Hint }
+                                  normal = { textColor = UITheme.HintColor }
                               });
                     UITheme.DrawHpBar(new Rect(card.x + 18, card.y + cardH - 22, card.width - 36, 12),
                                       u.HpRatio);
