@@ -91,19 +91,37 @@ namespace Bandhana.EditorTools
                 ("", "You sit up. The bedroom is too bright. Your eyes hurt."));
 
             D.momKitchen = Dlg("Dialogue_Lele_MomKitchen",
-                ("Mom", "There you are. The whole village heard me calling."),
-                ("Mom", "Your father is doing his sadhana. Don't go knocking on that door."),
-                ("Mom", "Karuna came by earlier — said she found something yesterday evening, wants to show you."));
+                ("Mom", "Look at this face. Look at it. Two o'clock and his hair is its own country."),
+                ("Mom", "Three times I called. Three! By the fourth, I was going to send your sister up with the broom."),
+                ("Sister", "I volunteered, <i>Dai</i> (big brother). I had a strategy."),
+                ("Mom", "Hush. — Your father is in his room doing sadhana. Don't even breathe near that door."),
+                ("Mom", "Last week you knocked and he lost focus. He growled at the rice for an hour."),
+                ("Sister", "He growled at the rice."),
+                ("Mom", "Stop repeating things. — Karuna came by this morning, just after the milkman."),
+                ("Mom", "She said she found something yesterday evening. Wouldn't even put it down to drink tea."),
+                ("Mom", "I asked what — she said '<i>Dai</i> needs to see it first.' Mysterious girl."));
 
             D.sisterMusicStar = Dlg("Dialogue_Lele_Sister",
-                ("Sister", "Bhaiya! When I'm older I'm going to be a music star."),
-                ("Sister", "Like really really famous. People will paint my face on motorbikes."),
-                ("Sister", "You can be in my videos. Maybe. If you're nice."));
+                ("Sister", "<i>Dai. Dai. DAI.</i> I have an announcement."),
+                ("Sister", "When I am older — like, eleven — I am going to be a music star."),
+                ("Sister", "Like really really famous. Bigger than that one with the hair. The hair one."),
+                ("Sister", "People will paint my face on motorbikes. And buses. Maybe one airplane."),
+                ("Mom", "Eat your dal."),
+                ("Sister", "I'm describing my future, Mama!"),
+                ("Mom", "Describe it with food in your mouth."),
+                ("Sister", "(whispers) You can be in my videos, <i>Dai</i>. As a backup person. Standing behind me. Mostly."),
+                ("Sister", "But you have to fix your hair first. It looks like a goat slept on it."));
 
             D.momLunch = Dlg("Dialogue_Lele_MomLunch",
-                ("Mom", "Sit. Eat. Daal-bhaat is still warm."),
-                ("", "You eat. The daal is good. Your sister is still talking about motorbikes."),
-                ("Mom", "When you're done — go find Karuna. And come back before dark."));
+                ("Mom", "Sit. The daal is still warm. Bhaat from this morning, but I added ghee."),
+                ("Mom", "There's saag too. Don't make a face — I saw the face."),
+                ("", "You sit. The daal is, annoyingly, very good."),
+                ("Sister", "Mama, when I'm famous I'll buy you a fridge that talks."),
+                ("Mom", "I don't want a fridge that talks. I have you."),
+                ("Sister", "That's mean and also funny. I'm putting it in a song."),
+                ("", "You finish. Mom slides a glass of water across the table without looking."),
+                ("Mom", "Now — go find Karuna before she comes back here and starts knocking again."),
+                ("Mom", "And be home before dark. Your father will surface around then. He'll want to see you."));
 
             D.karunasDad = Dlg("Dialogue_KarunasDad",
                 ("Karuna's Dad", "Oh — Lele. She was looking for you this morning."),
@@ -176,8 +194,10 @@ namespace Bandhana.EditorTools
                 ("", "The path north-west leads to the TU garden."));
 
             D.sisterIdle = Dlg("Dialogue_SisterIdle",
-                ("Sister", "Bhaiya, do you know any songs? I know seven."),
-                ("Sister", "I forgot four of them. But the other three are amazing."));
+                ("Sister", "<i>Dai</i>, do you know any songs? I know seven."),
+                ("Sister", "I forgot four of them. The other three are extremely good though."),
+                ("Sister", "One of them is just the word 'momo' said different ways. It's an art piece."),
+                ("Sister", "Don't tell Mama. She doesn't understand my creative process."));
 
             AssetDatabase.SaveAssets();
         }
@@ -268,9 +288,21 @@ namespace Bandhana.EditorTools
             // Stove block (NW corner)
             Wall(new Vector2(-5, 3)); Wall(new Vector2(-4, 3)); Wall(new Vector2(-5, 2));
 
-            // Mom NPC (interactable; pressing E triggers the kitchen cutscene)
-            MakeBeatNPC("Mom", new Vector3(-3, 2, 0), new Color(0.85f, 0.55f, 0.45f),
-                        OpeningBeat.MomKitchen, completionFlag: "ateLunch");
+            // Mom NPC. On first entry she walks up to Lele and the kitchen
+            // cutscene fires automatically. After "ateLunch" she stays put and
+            // the same NPC works as a normal E-press interactable (idle line).
+            var mom = MakeBeatNPC("Mom", new Vector3(-3, 2, 0),
+                                  new Color(0.85f, 0.55f, 0.45f),
+                                  OpeningBeat.MomKitchen, completionFlag: "ateLunch");
+            var approach = mom.AddComponent<NPCApproachOnSpawn>();
+            // Right-angle path: walk east first to (-1, 2), then north to
+            // (-1, 3) — one tile west of Lele's spawn at (0, 3). No diagonal.
+            approach.waypoints = new Vector2[] {
+                new Vector2(-1, 2),
+                new Vector2(-1, 3),
+            };
+            approach.speed = 2f;
+            approach.forbiddenFlag = "ateLunch";
 
             // Sister NPC — idle dialogue (just an NPC with DialogueSO)
             MakeNPC("Sister", new Vector3(2, 0, 0), new Color(0.95f, 0.70f, 0.55f), D.sisterIdle);
@@ -683,8 +715,8 @@ namespace Bandhana.EditorTools
 
         // NPC that runs an OpeningBeat instead of a plain dialogue. The cutscene
         // itself plays the dialogue. Optional completionFlag prevents re-firing.
-        static void MakeBeatNPC(string name, Vector3 pos, Color color,
-                                OpeningBeat beat, string completionFlag)
+        static GameObject MakeBeatNPC(string name, Vector3 pos, Color color,
+                                      OpeningBeat beat, string completionFlag)
         {
             var go = new GameObject($"NPC_{name}");
             go.transform.position = pos;
@@ -697,6 +729,7 @@ namespace Bandhana.EditorTools
             inter.forbiddenFlag = completionFlag;
             var inv = go.AddComponent<OpeningInvoker>();
             inv.beat = beat;
+            return go;
         }
 
         // Generic interactable (e.g. damaru pickup). Sprite chosen by caller.

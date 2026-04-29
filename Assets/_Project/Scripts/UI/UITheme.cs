@@ -141,11 +141,13 @@ namespace Bandhana.UI
             SpeakerName = new GUIStyle {
                 fontSize = 21, fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleLeft,
+                richText = true,
                 normal = { textColor = SaffronSoft },
             };
             DialogueLine = new GUIStyle {
                 fontSize = 26, wordWrap = true,
                 alignment = TextAnchor.UpperLeft,
+                richText = true,
                 normal = { textColor = new Color(0.96f, 0.94f, 0.86f) },
             };
             ContinueHint = new GUIStyle {

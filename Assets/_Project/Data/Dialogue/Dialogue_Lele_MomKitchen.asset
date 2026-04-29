@@ -14,9 +14,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
   - speaker: Mom
-    text: There you are. The whole village heard me calling.
+    text: Look at this face. Look at it. Two o'clock and his hair is its own country.
   - speaker: Mom
-    text: Your father is doing his sadhana. Don't go knocking on that door.
+    text: Three times I called. Three! By the fourth, I was going to send your sister
+      up with the broom.
+  - speaker: Sister
+    text: I volunteered, Bhaiya. I had a strategy.
   - speaker: Mom
-    text: "Karuna came by earlier \u2014 said she found something yesterday evening,
-      wants to show you."
+    text: "Hush. \u2014 Your father is in his room doing sadhana. Don't even breathe
+      near that door."
+  - speaker: Mom
+    text: Last week you knocked and he lost focus. He growled at the rice for an
+      hour.
+  - speaker: Sister
+    text: He growled at the rice.
+  - speaker: Mom
+    text: "Stop repeating things. \u2014 Karuna came by this morning, just after
+      the milkman."
+  - speaker: Mom
+    text: She said she found something yesterday evening. Wouldn't even put it down
+      to drink tea.
+  - speaker: Mom
+    text: "I asked what \u2014 she said 'Bhaiya needs to see it first.' Mysterious
+      girl."

@@ -14,8 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
   - speaker: Mom
-    text: Sit. Eat. Daal-bhaat is still warm.
-  - speaker: 
-    text: You eat. The daal is good. Your sister is still talking about motorbikes.
+    text: Sit. The daal is still warm. Bhaat from this morning, but I added ghee.
   - speaker: Mom
-    text: "When you're done \u2014 go find Karuna. And come back before dark."
+    text: "There's saag too. Don't make a face \u2014 I saw the face."
+  - speaker: 
+    text: You sit. The daal is, annoyingly, very good.
+  - speaker: Sister
+    text: Mama, when I'm famous I'll buy you a fridge that talks.
+  - speaker: Mom
+    text: I don't want a fridge that talks. I have you.
+  - speaker: Sister
+    text: That's mean and also funny. I'm putting it in a song.
+  - speaker: 
+    text: You finish. Mom slides a glass of water across the table without looking.
+  - speaker: Mom
+    text: "Now \u2014 go find Karuna before she comes back here and starts knocking
+      again."
+  - speaker: Mom
+    text: And be home before dark. Your father will surface around then. He'll want
+      to see you.

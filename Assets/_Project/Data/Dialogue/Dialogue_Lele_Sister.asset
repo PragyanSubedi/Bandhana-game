@@ -14,8 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
   - speaker: Sister
-    text: Bhaiya! When I'm older I'm going to be a music star.
+    text: Bhaiya. Bhaiya. BHAIYA. I have an announcement.
   - speaker: Sister
-    text: Like really really famous. People will paint my face on motorbikes.
+    text: "When I am older \u2014 like, eleven \u2014 I am going to be a music star."
   - speaker: Sister
-    text: You can be in my videos. Maybe. If you're nice.
+    text: Like really really famous. Bigger than that one with the hair. The hair
+      one.
+  - speaker: Sister
+    text: People will paint my face on motorbikes. And buses. Maybe one airplane.
+  - speaker: Mom
+    text: Eat your dal.
+  - speaker: Sister
+    text: I'm describing my future, Mama!
+  - speaker: Mom
+    text: Describe it with food in your mouth.
+  - speaker: Sister
+    text: (whispers) You can be in my videos, Bhaiya. As a backup person. Standing
+      behind me. Mostly.
+  - speaker: Sister
+    text: But you have to fix your hair first. It looks like a goat slept on it.

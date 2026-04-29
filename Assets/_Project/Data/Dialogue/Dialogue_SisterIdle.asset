@@ -16,4 +16,8 @@ MonoBehaviour:
   - speaker: Sister
     text: Bhaiya, do you know any songs? I know seven.
   - speaker: Sister
-    text: I forgot four of them. But the other three are amazing.
+    text: I forgot four of them. The other three are extremely good though.
+  - speaker: Sister
+    text: One of them is just the word 'momo' said different ways. It's an art piece.
+  - speaker: Sister
+    text: Don't tell Mama. She doesn't understand my creative process.

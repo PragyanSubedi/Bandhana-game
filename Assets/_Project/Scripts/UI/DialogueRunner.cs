@@ -79,6 +79,61 @@ namespace Bandhana.UI
             UIState.Close();
         }
 
+        // Count characters that aren't inside a <…> tag.
+        static int CountVisible(string s)
+        {
+            int count = 0, i = 0;
+            while (i < s.Length)
+            {
+                if (s[i] == '<')
+                {
+                    int close = s.IndexOf('>', i);
+                    if (close < 0) { count++; i++; continue; }
+                    i = close + 1;
+                }
+                else { count++; i++; }
+            }
+            return count;
+        }
+
+        // Reveal the first `visibleChars` non-tag characters from `s`, copying
+        // any tags whole and auto-closing any tags still open at the cut point.
+        static string TypewriterReveal(string s, int visibleChars)
+        {
+            var sb = new System.Text.StringBuilder(s.Length);
+            var open = new System.Collections.Generic.Stack<string>();
+            int i = 0, vis = 0;
+            while (i < s.Length)
+            {
+                if (s[i] == '<')
+                {
+                    int close = s.IndexOf('>', i);
+                    if (close < 0) { sb.Append(s[i++]); continue; }
+                    string tag = s.Substring(i, close - i + 1);
+                    sb.Append(tag);
+                    if (tag.StartsWith("</"))
+                    {
+                        if (open.Count > 0) open.Pop();
+                    }
+                    else if (!tag.EndsWith("/>"))
+                    {
+                        int nameEnd = 1;
+                        while (nameEnd < tag.Length - 1 && tag[nameEnd] != ' ' && tag[nameEnd] != '>')
+                            nameEnd++;
+                        open.Push(tag.Substring(1, nameEnd - 1));
+                    }
+                    i = close + 1;
+                    continue;
+                }
+                if (vis >= visibleChars) break;
+                sb.Append(s[i++]);
+                vis++;
+            }
+            while (open.Count > 0)
+                sb.Append("</").Append(open.Pop()).Append('>');
+            return sb.ToString();
+        }
+
         void OnGUI()
         {
             if (!isPlaying || current == null) return;
@@ -102,17 +157,20 @@ namespace Bandhana.UI
                           line.speaker, UITheme.SpeakerName);
             }
 
-            // Typewritten body
+            // Typewritten body — counts visible (non-tag) characters and
+            // auto-closes any open rich-text tags at the reveal point so partial
+            // <i>…</i> spans render correctly.
             string full = line.text ?? string.Empty;
+            int totalVisible = CountVisible(full);
             int reveal;
-            if (fullyRevealed) reveal = full.Length;
+            if (fullyRevealed) reveal = totalVisible;
             else
             {
                 float dt = Mathf.Max(0f, Time.unscaledTime - lineStartTime);
-                reveal = Mathf.Clamp(Mathf.FloorToInt(dt * charsPerSecond), 0, full.Length);
-                if (reveal >= full.Length) fullyRevealed = true;
+                reveal = Mathf.Clamp(Mathf.FloorToInt(dt * charsPerSecond), 0, totalVisible);
+                if (reveal >= totalVisible) fullyRevealed = true;
             }
-            string shown = reveal >= full.Length ? full : full.Substring(0, reveal);
+            string shown = TypewriterReveal(full, reveal);
 
             GUI.Label(new Rect(rect.x + 22, rect.y + 24, rect.width - 44, rect.height - 56),
                       shown, UITheme.DialogueLine);
