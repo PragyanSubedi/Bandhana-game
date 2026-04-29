@@ -26,7 +26,8 @@ namespace Bandhana.EditorTools
 
         class StoryDialogues
         {
-            public DialogueSO momShouts, momKitchenIntro, momKitchenAfter, sisterMusicStar, momLunch;
+            public DialogueSO momShouts, momKitchenIntro, momKitchenAfter, sisterMusicStar;
+            public DialogueSO momLunchInvite, momLunchEat;
             public DialogueSO karunasDad, karunaTUGarden, damaruPickup;
             public DialogueSO leleAlone, emptyStreet;
             public DialogueSO bajeMeeting, bajeAstralLore, bajeOutside;
@@ -121,9 +122,13 @@ namespace Bandhana.EditorTools
                 ("Sister", "(whispers) You can be in my videos, <i>Dai</i>. As a backup person. Standing behind me. Mostly."),
                 ("Sister", "But you have to fix your hair first. It looks like a goat slept on it."));
 
-            D.momLunch = Dlg("Dialogue_Lele_MomLunch",
+            // Split: Mom invites them to the table → all three walk over →
+            // narrator notes them sitting + the rest of the meal banter.
+            D.momLunchInvite = Dlg("Dialogue_Lele_MomLunchInvite",
                 ("Mom", "Sit. The lentil soup is still warm. Rice from this morning, but I added butter."),
-                ("Mom", "There's spinach too. Don't make a face. I saw the face."),
+                ("Mom", "There's spinach too. Don't make a face. I saw the face."));
+
+            D.momLunchEat = Dlg("Dialogue_Lele_MomLunchEat",
                 ("", "You sit. The lentil soup is, annoyingly, very good."),
                 ("Sister", "Mama, when I'm famous I'll buy you a fridge that talks."),
                 ("Mom", "I don't want a fridge that talks. I have you."),
@@ -317,23 +322,28 @@ namespace Bandhana.EditorTools
             approach.speed = 2f;
             approach.forbiddenFlag = "ateLunch";
 
-            // Sister NPC — sits at the dining table. The kitchen cutscene
-            // walks her over to Lele the moment her first speaking turn arrives;
-            // she doesn't move on scene start.
-            MakeNPC("Sister", new Vector3(-1, -1, 0),
+            // Sister NPC — starts east of the dining table, idle. The kitchen
+            // cutscene walks her over to Lele when her first speaking turn
+            // arrives, then later all three walk back over to the table.
+            MakeNPC("Sister", new Vector3(1, -1, 0),
                     new Color(0.95f, 0.70f, 0.55f), D.sisterIdle);
 
-            // Dining table on the LEFT — two bench tiles side by side, with a
-            // plate of food overlaid on each (no collider on the plates so they
-            // sit visually on top of the table).
+            // Dining table on the LEFT — three bench tiles side by side so all
+            // three of them can sit. Plates overlaid (no collider) so they sit
+            // visually on top of the table.
             var tableWood = new Color(0.55f, 0.40f, 0.25f);
+            Decor(new Vector3(-4, -1, 0), tableWood, 2);
             Decor(new Vector3(-3, -1, 0), tableWood, 2);
             Decor(new Vector3(-2, -1, 0), tableWood, 2);
-            SpawnTile(null, "Plate_L", -3, -1,
-                      SpriteFactory.Plate(new Color(0.95f, 0.92f, 0.85f), new Color(0.95f, 0.78f, 0.30f)),
+            var plateRim = new Color(0.95f, 0.92f, 0.85f);
+            SpawnTile(null, "Plate_L", -4, -1,
+                      SpriteFactory.Plate(plateRim, new Color(0.95f, 0.78f, 0.30f)),
+                      sortingOrder: 6, hasCollider: false);
+            SpawnTile(null, "Plate_M", -3, -1,
+                      SpriteFactory.Plate(plateRim, new Color(0.45f, 0.65f, 0.30f)),
                       sortingOrder: 6, hasCollider: false);
             SpawnTile(null, "Plate_R", -2, -1,
-                      SpriteFactory.Plate(new Color(0.95f, 0.92f, 0.85f), new Color(0.45f, 0.65f, 0.30f)),
+                      SpriteFactory.Plate(plateRim, new Color(0.85f, 0.45f, 0.30f)),
                       sortingOrder: 6, hasCollider: false);
 
             // Parents' bedroom door — set into the east wall at (6, 0) where
@@ -687,7 +697,8 @@ namespace Bandhana.EditorTools
             assets.momKitchenIntro  = D.momKitchenIntro;
             assets.momKitchenAfter  = D.momKitchenAfter;
             assets.sisterMusicStar  = D.sisterMusicStar;
-            assets.momLunch         = D.momLunch;
+            assets.momLunchInvite   = D.momLunchInvite;
+            assets.momLunchEat      = D.momLunchEat;
             assets.karunasDad       = D.karunasDad;
             assets.karunaTUGarden   = D.karunaTUGarden;
             assets.damaruPickup     = D.damaruPickup;

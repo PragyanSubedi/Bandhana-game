@@ -32,7 +32,9 @@ namespace Bandhana.Story
             yield return WalkSisterToLele();
             yield return CutsceneRunner.Say(a?.momKitchenAfter);
             yield return CutsceneRunner.Say(a?.sisterMusicStar);
-            yield return CutsceneRunner.Say(a?.momLunch);
+            yield return CutsceneRunner.Say(a?.momLunchInvite);
+            yield return WalkAllToTable();
+            yield return CutsceneRunner.Say(a?.momLunchEat);
             yield return CutsceneRunner.SetFlag("ateLunch");
         }
 
@@ -40,14 +42,41 @@ namespace Bandhana.Story
         {
             var sister = GameObject.Find("NPC_Sister");
             if (sister == null) yield break;
-            Vector2[] path = { new Vector2(1, -1), new Vector2(1, 3) };
+            yield return WalkPath(sister.transform,
+                new Vector2[] { new Vector2(1, -1), new Vector2(1, 3) }, 3.5f);
+        }
+
+        // Mom, Lele, and Sister all walk over to the dining table on the left
+        // and stand at their seat tiles north of the plates. Coroutines run in
+        // parallel so they move together.
+        static IEnumerator WalkAllToTable()
+        {
+            var lele   = GameObject.Find("Player");
+            var mom    = GameObject.Find("NPC_Mom");
+            var sister = GameObject.Find("NPC_Sister");
+
             const float speed = 3.5f;
+            var coros = new System.Collections.Generic.List<Coroutine>();
+            if (lele != null)
+                coros.Add(CutsceneRunner.Instance.StartCoroutine(WalkPath(lele.transform,
+                    new Vector2[] { new Vector2(0, 0), new Vector2(-3, 0) }, speed)));
+            if (mom != null)
+                coros.Add(CutsceneRunner.Instance.StartCoroutine(WalkPath(mom.transform,
+                    new Vector2[] { new Vector2(-1, 0), new Vector2(-4, 0) }, speed)));
+            if (sister != null)
+                coros.Add(CutsceneRunner.Instance.StartCoroutine(WalkPath(sister.transform,
+                    new Vector2[] { new Vector2(1, 0), new Vector2(-2, 0) }, speed)));
+
+            foreach (var c in coros) yield return c;
+        }
+
+        static IEnumerator WalkPath(Transform t, Vector2[] path, float speed)
+        {
             foreach (var wp in path)
             {
-                while ((Vector2)sister.transform.position != wp)
+                while ((Vector2)t.position != wp)
                 {
-                    sister.transform.position = Vector2.MoveTowards(
-                        sister.transform.position, wp, speed * Time.deltaTime);
+                    t.position = Vector2.MoveTowards(t.position, wp, speed * Time.deltaTime);
                     yield return null;
                 }
             }

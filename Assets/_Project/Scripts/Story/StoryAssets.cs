@@ -14,7 +14,8 @@ namespace Bandhana.Story
         public DialogueSO momKitchenIntro;     // Mom's first lines, before Sister chimes in
         public DialogueSO momKitchenAfter;     // Sister's first quip onward
         public DialogueSO sisterMusicStar;
-        public DialogueSO momLunch;
+        public DialogueSO momLunchInvite;     // Mom's "sit" + menu lines, before they walk to the table
+        public DialogueSO momLunchEat;        // narrator "you sit" + table conversation
         public DialogueSO karunasDad;
         public DialogueSO karunaTUGarden;
         public DialogueSO damaruPickup;
