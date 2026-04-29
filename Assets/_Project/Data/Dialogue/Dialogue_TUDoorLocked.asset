@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
   - speaker: 
-    text: The path north-west leads to the TU garden.
+    text: The path northwest leads to the TU garden.

@@ -34,6 +34,7 @@ namespace Bandhana.EditorTools
 
             // Locked-door / hint dialogues
             public DialogueSO doorBedroomLocked, doorKarunaLocked, doorTUGardenLocked;
+            public DialogueSO parentsDoorLocked;
 
             // Misc NPCs (sister, dog)
             public DialogueSO sisterIdle;
@@ -94,16 +95,16 @@ namespace Bandhana.EditorTools
                 ("Mom", "Look at this face. Look at it. Two o'clock and his hair is its own country."),
                 ("Mom", "Three times I called. Three! By the fourth, I was going to send your sister up with the broom."),
                 ("Sister", "I volunteered, <i>Dai</i> (big brother). I had a strategy."),
-                ("Mom", "Hush. — Your father is in his room doing sadhana. Don't even breathe near that door."),
+                ("Mom", "Hush. Your father is in his room doing <i>sadhana</i> (spiritual practice). Don't even breathe near that door."),
                 ("Mom", "Last week you knocked and he lost focus. He growled at the rice for an hour."),
-                ("Sister", "He growled at the rice."),
-                ("Mom", "Stop repeating things. — Karuna came by this morning, just after the milkman."),
+                ("Sister", "<i>He growled at the rice.</i>"),
+                ("Mom", "Stop repeating things. Karuna came by this morning, just after the milkman."),
                 ("Mom", "She said she found something yesterday evening. Wouldn't even put it down to drink tea."),
-                ("Mom", "I asked what — she said '<i>Dai</i> needs to see it first.' Mysterious girl."));
+                ("Mom", "I asked what. She said 'Lele needs to see it first.' Mysterious girl."));
 
             D.sisterMusicStar = Dlg("Dialogue_Lele_Sister",
                 ("Sister", "<i>Dai. Dai. DAI.</i> I have an announcement."),
-                ("Sister", "When I am older — like, eleven — I am going to be a music star."),
+                ("Sister", "When I am older, like eleven, I am going to be a music star."),
                 ("Sister", "Like really really famous. Bigger than that one with the hair. The hair one."),
                 ("Sister", "People will paint my face on motorbikes. And buses. Maybe one airplane."),
                 ("Mom", "Eat your dal."),
@@ -114,28 +115,28 @@ namespace Bandhana.EditorTools
 
             D.momLunch = Dlg("Dialogue_Lele_MomLunch",
                 ("Mom", "Sit. The daal is still warm. Bhaat from this morning, but I added ghee."),
-                ("Mom", "There's saag too. Don't make a face — I saw the face."),
+                ("Mom", "There's saag too. Don't make a face. I saw the face."),
                 ("", "You sit. The daal is, annoyingly, very good."),
                 ("Sister", "Mama, when I'm famous I'll buy you a fridge that talks."),
                 ("Mom", "I don't want a fridge that talks. I have you."),
                 ("Sister", "That's mean and also funny. I'm putting it in a song."),
                 ("", "You finish. Mom slides a glass of water across the table without looking."),
-                ("Mom", "Now — go find Karuna before she comes back here and starts knocking again."),
+                ("Mom", "Now go find Karuna before she comes back here and starts knocking again."),
                 ("Mom", "And be home before dark. Your father will surface around then. He'll want to see you."));
 
             D.karunasDad = Dlg("Dialogue_KarunasDad",
-                ("Karuna's Dad", "Oh — Lele. She was looking for you this morning."),
+                ("Karuna's Dad", "Oh, Lele. She was looking for you this morning."),
                 ("Karuna's Dad", "She went to the TU garden with that dog of hers."),
-                ("Karuna's Dad", "Said she had something to show you. Drum-shaped, I think? Strange thing."));
+                ("Karuna's Dad", "Said she had something to show you. Shaped like a drum, I think? Strange thing."));
 
             D.karunaTUGarden = Dlg("Dialogue_KarunaTU",
                 ("Karuna", "There you are! Took you long enough."),
                 ("Karuna", "I found this in front of my house yesterday evening."),
-                ("Karuna", "It's a damaru — like the ones the sadhus carry."),
-                ("Karuna", "Bhotu won't stop barking at it. Look — go on. Try it."));
+                ("Karuna", "It's a damaru, like the ones the sadhus carry."),
+                ("Karuna", "Bhotu won't stop barking at it. Look. Go on. Try it."));
 
             D.damaruPickup = Dlg("Dialogue_DamaruPlay",
-                ("", "You pick up the damaru. The skin is warm — warmer than it should be."),
+                ("", "You pick up the damaru. The skin is warm. Warmer than it should be."),
                 ("", "You twist your wrist. The beads strike."),
                 ("", "Dum… dum… dum…"));
 
@@ -145,7 +146,7 @@ namespace Bandhana.EditorTools
                 ("", "How long were you out? It feels like evening already."));
 
             D.emptyStreet = Dlg("Dialogue_EmptyStreet",
-                ("", "The street is empty. No motorbikes. No tea-shop chatter."),
+                ("", "The street is empty. No motorbikes. No tea shop chatter."),
                 ("", "A dog stands at the corner without moving. Its eyes don't follow you."),
                 ("", "You should check on your family."));
 
@@ -153,13 +154,13 @@ namespace Bandhana.EditorTools
                 ("Lele", "Hey! What are you doing in my house?!"),
                 ("Old Man", "You're here. You're finally here."),
                 ("Old Man", "You look just like him."),
-                ("Lele", "What — this is my home. Where are my mom and sister?"),
-                ("Lele", "I'll call the police. I'll —"));
+                ("Lele", "What… this is my home. Where are my mom and sister?"),
+                ("Lele", "I'll call the police. I'll…"));
 
             D.bajeAstralLore = Dlg("Dialogue_BajeAstralLore",
                 ("Old Man", "Your phone won't work here, child. Sit down."),
                 ("Old Man", "When you struck the damaru, you flipped the state of the world."),
-                ("Old Man", "The physical and the astral — most never know there is a difference."),
+                ("Old Man", "The physical and the astral. Most never know there is a difference."),
                 ("Old Man", "Your body is in the astral now. Mine has been here a long time."),
                 ("Old Man", "I am called Baje. The damaru pulled you across. We must find it again."),
                 ("Old Man", "But understand: each time the damaru is struck, the boundary thins."),
@@ -173,16 +174,16 @@ namespace Bandhana.EditorTools
 
             D.karunaTwistIntro = Dlg("Dialogue_KarunaTwist",
                 ("Karuna", "You took long enough."),
-                ("Lele", "Karuna — what —"),
+                ("Lele", "Karuna… what…"),
                 ("Karuna", "I didn't find this. It was waiting."),
                 ("Karuna", "Listen. Isn't it clearer here?"),
                 ("Baje", "She isn't attacking you. She's anchoring it. Break the rhythm."),
-                ("Baje", "Match her beat — then disrupt it. Press SPACE between her drums."));
+                ("Baje", "Match her beat. Then disrupt it. Press SPACE between her drums."));
 
             D.karunaPostBoss = Dlg("Dialogue_KarunaPostBoss",
                 ("Karuna", "Lele…?"),
                 ("Karuna", "I couldn't stop hearing it…"),
-                ("", "The damaru cracks faintly — light leaks from inside."),
+                ("", "The damaru cracks faintly. Light leaks from inside."),
                 ("Baje", "You didn't win. You interrupted it."),
                 ("Baje", "Now it knows you can interfere."));
 
@@ -191,7 +192,10 @@ namespace Bandhana.EditorTools
             D.doorKarunaLocked = Dlg("Dialogue_KarunaDoorLocked",
                 ("", "The door is shut. You should head outside first."));
             D.doorTUGardenLocked = Dlg("Dialogue_TUDoorLocked",
-                ("", "The path north-west leads to the TU garden."));
+                ("", "The path northwest leads to the TU garden."));
+
+            D.parentsDoorLocked = Dlg("Dialogue_ParentsDoorLocked",
+                ("Lele", "I shouldn't open this right now. Dad is meditating."));
 
             D.sisterIdle = Dlg("Dialogue_SisterIdle",
                 ("Sister", "<i>Dai</i>, do you know any songs? I know seven."),
@@ -283,7 +287,8 @@ namespace Bandhana.EditorTools
             MakeStoryRoot();
             MakePlayer(new Vector3(0, 3, 0));
 
-            BuildPerimeter(6, 4, southGapX: 0);
+            // East wall has a gap at y=0 where the parents' bedroom door sits.
+            BuildPerimeter(6, 4, southGapX: 0, eastGapY: 0);
 
             // Stove block (NW corner)
             Wall(new Vector2(-5, 3)); Wall(new Vector2(-4, 3)); Wall(new Vector2(-5, 2));
@@ -304,11 +309,37 @@ namespace Bandhana.EditorTools
             approach.speed = 2f;
             approach.forbiddenFlag = "ateLunch";
 
-            // Sister NPC — idle dialogue (just an NPC with DialogueSO)
-            MakeNPC("Sister", new Vector3(2, 0, 0), new Color(0.95f, 0.70f, 0.55f), D.sisterIdle);
+            // Sister NPC — starts at the dining table; on first entry she
+            // walks east, then north, ending east of Lele so she's flanking
+            // him with Mom on the other side.
+            var sister = MakeNPC("Sister", new Vector3(-1, -1, 0),
+                                 new Color(0.95f, 0.70f, 0.55f), D.sisterIdle);
+            var sisterApproach = sister.AddComponent<NPCApproachOnSpawn>();
+            sisterApproach.waypoints = new Vector2[] {
+                new Vector2(1, -1),   // east first
+                new Vector2(1,  3),   // then straight north toward Lele
+            };
+            sisterApproach.speed = 3f;          // a touch faster than Mom so she keeps up
+            sisterApproach.forbiddenFlag = "ateLunch";
 
-            // Table decor
-            Decor(new Vector3( 0, 0, 0), new Color(0.55f, 0.40f, 0.25f), 2);  // bench/table
+            // Dining table on the LEFT — two bench tiles side by side, with a
+            // plate of food overlaid on each (no collider on the plates so they
+            // sit visually on top of the table).
+            var tableWood = new Color(0.55f, 0.40f, 0.25f);
+            Decor(new Vector3(-3, -1, 0), tableWood, 2);
+            Decor(new Vector3(-2, -1, 0), tableWood, 2);
+            SpawnTile(null, "Plate_L", -3, -1,
+                      SpriteFactory.Plate(new Color(0.95f, 0.92f, 0.85f), new Color(0.95f, 0.78f, 0.30f)),
+                      sortingOrder: 6, hasCollider: false);
+            SpawnTile(null, "Plate_R", -2, -1,
+                      SpriteFactory.Plate(new Color(0.95f, 0.92f, 0.85f), new Color(0.45f, 0.65f, 0.30f)),
+                      sortingOrder: 6, hasCollider: false);
+
+            // Parents' bedroom door — set into the east wall at (6, 0) where
+            // the perimeter has its gap. Solid collider still blocks Lele;
+            // pressing E plays the "I shouldn't open this right now" dialogue.
+            MakeBlockingDoorWithDialogue("Door_ParentsBedroom",
+                                         new Vector3(6, 0, 0), D.parentsDoorLocked);
 
             // Stairs back upstairs — same tile the player spawns on. Walking
             // away and back onto it loads the bedroom. (CheckTriggers only
@@ -321,7 +352,7 @@ namespace Bandhana.EditorTools
             MakeTransition(new Vector3(0, -4, 0),
                 "03_Town_Day", new Vector2(0, 5),
                 requiredFlag: "ateLunch",
-                lockedHint: "you should eat first. mom made daal-bhaat.");
+                lockedHint: "you should eat first. mom made daal bhaat.");
 
             SaveAndRegister(scene, "02_LeleHouse_Kitchen");
         }
@@ -700,7 +731,7 @@ namespace Bandhana.EditorTools
             }
         }
 
-        static void MakeNPC(string name, Vector3 pos, Color color, DialogueSO dialogue)
+        static GameObject MakeNPC(string name, Vector3 pos, Color color, DialogueSO dialogue)
         {
             var go = new GameObject($"NPC_{name}");
             go.transform.position = pos;
@@ -711,6 +742,7 @@ namespace Bandhana.EditorTools
             var npc = go.AddComponent<NPC>();
             npc.npcName = name;
             npc.dialogue = dialogue;
+            return go;
         }
 
         // NPC that runs an OpeningBeat instead of a plain dialogue. The cutscene
@@ -780,6 +812,24 @@ namespace Bandhana.EditorTools
             w.minX = -8f; w.maxX = 8f; w.speed = 0.4f;
             // Stretched proportions — set scale to suggest "too tall"
             go.transform.localScale = new Vector3(0.9f, 1.6f, 1f);
+        }
+
+        // A door tile that blocks movement (solid collider) and plays a
+        // dialogue when interacted with via E. Used for the parents' bedroom
+        // door in the kitchen — Lele can walk up to it but not through, and
+        // pressing E reminds him not to disturb Dad's sadhana.
+        static void MakeBlockingDoorWithDialogue(string name, Vector3 pos, DialogueSO dialogue)
+        {
+            var go = new GameObject(name);
+            go.transform.position = pos;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = SpriteFactory.Door(new Color(0.50f, 0.30f, 0.18f));
+            sr.sortingOrder = 5;
+            // Non-trigger collider blocks PlayerController.TryStep.
+            go.AddComponent<BoxCollider2D>();
+            var npc = go.AddComponent<NPC>();
+            npc.npcName = "Door";
+            npc.dialogue = dialogue;
         }
 
         static void MakeTransition(Vector3 pos,

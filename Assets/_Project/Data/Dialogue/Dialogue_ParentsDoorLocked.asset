@@ -10,16 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e1b77b3898bac999e908216c0f6bf6e3, type: 3}
-  m_Name: Dialogue_BajeMeeting
+  m_Name: Dialogue_ParentsDoorLocked
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
   - speaker: Lele
-    text: Hey! What are you doing in my house?!
-  - speaker: Old Man
-    text: You're here. You're finally here.
-  - speaker: Old Man
-    text: You look just like him.
-  - speaker: Lele
-    text: "What\u2026 this is my home. Where are my mom and sister?"
-  - speaker: Lele
-    text: "I'll call the police. I'll\u2026"
+    text: I shouldn't open this right now. Dad is meditating.

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
   - speaker: 
-    text: The street is empty. No motorbikes. No tea-shop chatter.
+    text: The street is empty. No motorbikes. No tea shop chatter.
   - speaker: 
     text: A dog stands at the corner without moving. Its eyes don't follow you.
   - speaker: 

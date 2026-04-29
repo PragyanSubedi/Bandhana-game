@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
   - speaker: Sister
-    text: Bhaiya. Bhaiya. BHAIYA. I have an announcement.
+    text: <i>Dai. Dai. DAI.</i> I have an announcement.
   - speaker: Sister
-    text: "When I am older \u2014 like, eleven \u2014 I am going to be a music star."
+    text: When I am older, like eleven, I am going to be a music star.
   - speaker: Sister
     text: Like really really famous. Bigger than that one with the hair. The hair
       one.
@@ -29,7 +29,7 @@ MonoBehaviour:
   - speaker: Mom
     text: Describe it with food in your mouth.
   - speaker: Sister
-    text: (whispers) You can be in my videos, Bhaiya. As a backup person. Standing
+    text: (whispers) You can be in my videos, <i>Dai</i>. As a backup person. Standing
       behind me. Mostly.
   - speaker: Sister
     text: But you have to fix your hair first. It looks like a goat slept on it.

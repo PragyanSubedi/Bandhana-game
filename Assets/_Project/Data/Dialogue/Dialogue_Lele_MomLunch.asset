@@ -16,7 +16,7 @@ MonoBehaviour:
   - speaker: Mom
     text: Sit. The daal is still warm. Bhaat from this morning, but I added ghee.
   - speaker: Mom
-    text: "There's saag too. Don't make a face \u2014 I saw the face."
+    text: There's saag too. Don't make a face. I saw the face.
   - speaker: 
     text: You sit. The daal is, annoyingly, very good.
   - speaker: Sister
@@ -28,8 +28,7 @@ MonoBehaviour:
   - speaker: 
     text: You finish. Mom slides a glass of water across the table without looking.
   - speaker: Mom
-    text: "Now \u2014 go find Karuna before she comes back here and starts knocking
-      again."
+    text: Now go find Karuna before she comes back here and starts knocking again.
   - speaker: Mom
     text: And be home before dark. Your father will surface around then. He'll want
       to see you.

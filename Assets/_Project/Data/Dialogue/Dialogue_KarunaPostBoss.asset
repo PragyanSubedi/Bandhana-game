@@ -18,7 +18,7 @@ MonoBehaviour:
   - speaker: Karuna
     text: "I couldn't stop hearing it\u2026"
   - speaker: 
-    text: "The damaru cracks faintly \u2014 light leaks from inside."
+    text: The damaru cracks faintly. Light leaks from inside.
   - speaker: Baje
     text: You didn't win. You interrupted it.
   - speaker: Baje

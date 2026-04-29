@@ -16,7 +16,7 @@ MonoBehaviour:
   - speaker: Karuna
     text: You took long enough.
   - speaker: Lele
-    text: "Karuna \u2014 what \u2014"
+    text: "Karuna\u2026 what\u2026"
   - speaker: Karuna
     text: I didn't find this. It was waiting.
   - speaker: Karuna
@@ -24,4 +24,4 @@ MonoBehaviour:
   - speaker: Baje
     text: She isn't attacking you. She's anchoring it. Break the rhythm.
   - speaker: Baje
-    text: "Match her beat \u2014 then disrupt it. Press SPACE between her drums."
+    text: Match her beat. Then disrupt it. Press SPACE between her drums.

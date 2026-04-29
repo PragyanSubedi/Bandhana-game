@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
   - speaker: 
-    text: "You pick up the damaru. The skin is warm \u2014 warmer than it should
-      be."
+    text: You pick up the damaru. The skin is warm. Warmer than it should be.
   - speaker: 
     text: You twist your wrist. The beads strike.
   - speaker: 

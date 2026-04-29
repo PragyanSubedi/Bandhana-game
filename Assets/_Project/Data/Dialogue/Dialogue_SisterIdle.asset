@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
   - speaker: Sister
-    text: Bhaiya, do you know any songs? I know seven.
+    text: <i>Dai</i>, do you know any songs? I know seven.
   - speaker: Sister
     text: I forgot four of them. The other three are extremely good though.
   - speaker: Sister

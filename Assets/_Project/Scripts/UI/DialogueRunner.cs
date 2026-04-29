@@ -146,14 +146,18 @@ namespace Bandhana.UI
 
             var line = current.lines[Mathf.Clamp(index, 0, current.lines.Count - 1)];
 
-            // Speaker chip
+            // Speaker chip — sized from the actual rendered text width at the
+            // SpeakerName style's font size, not the default GUI.skin label.
             if (!string.IsNullOrEmpty(line.speaker))
             {
-                float chipW = Mathf.Min(280f, GUI.skin.label.CalcSize(new GUIContent(line.speaker)).x + 60f);
-                var chip = new Rect(rect.x + 18, rect.y - 14, chipW, 30);
+                const float chipPadX = 14f;
+                const float chipH = 38f;
+                float textW = UITheme.SpeakerName.CalcSize(new GUIContent(line.speaker)).x;
+                float chipW = Mathf.Min(rect.width - 36f, textW + chipPadX * 2f);
+                var chip = new Rect(rect.x + 18, rect.y - chipH * 0.5f, chipW, chipH);
                 UITheme.DrawSolid(chip, new Color(0.20f, 0.14f, 0.08f, 0.98f));
                 UITheme.DrawSolid(new Rect(chip.x, chip.y + chip.height - 2, chip.width, 2), UITheme.Saffron);
-                GUI.Label(new Rect(chip.x + 14, chip.y, chip.width - 28, chip.height),
+                GUI.Label(new Rect(chip.x + chipPadX, chip.y, chip.width - chipPadX * 2f, chip.height),
                           line.speaker, UITheme.SpeakerName);
             }
 

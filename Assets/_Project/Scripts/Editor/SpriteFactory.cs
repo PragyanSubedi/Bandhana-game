@@ -156,6 +156,34 @@ namespace Bandhana.EditorTools
             return MakeSprite(tex);
         }
 
+        // Top-down round plate with a small mound of food in the middle.
+        // Background is transparent so it overlays the table tile beneath.
+        public static Sprite Plate(Color rim, Color food)
+        {
+            var tex = NewTex();
+            for (int i = 0; i < Size * Size; i++) tex.SetPixel(i % Size, i / Size, new Color(0, 0, 0, 0));
+            float cx = Size / 2f - 0.5f, cy = Size / 2f - 0.5f;
+            var rimDark = Darker(rim, 0.35f);
+            var rimLight = Lighter(rim, 0.10f);
+            var foodDark = Darker(food, 0.25f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    float dx = x - cx, dy = y - cy;
+                    float r = Mathf.Sqrt(dx * dx + dy * dy);
+                    Color c;
+                    if (r > 13.5f)      continue;                    // transparent outside
+                    else if (r > 11.5f) c = rimDark;                 // outer ring
+                    else if (r > 9f)    c = rim;                     // plate body
+                    else if (r > 7f)    c = rimLight;                // inner highlight
+                    else if (r > 4.5f)  c = food;                    // food mound
+                    else                c = foodDark;                // mound shadow
+                    tex.SetPixel(x, y, c);
+                }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
         public static Sprite Solid(Color color)
         {
             var tex = new Texture2D(Size, Size, TextureFormat.RGBA32, false)

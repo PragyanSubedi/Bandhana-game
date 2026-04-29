@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
   - speaker: Karuna's Dad
-    text: "Oh \u2014 Lele. She was looking for you this morning."
+    text: Oh, Lele. She was looking for you this morning.
   - speaker: Karuna's Dad
     text: She went to the TU garden with that dog of hers.
   - speaker: Karuna's Dad
-    text: Said she had something to show you. Drum-shaped, I think? Strange thing.
+    text: Said she had something to show you. Shaped like a drum, I think? Strange
+      thing.

@@ -19,21 +19,19 @@ MonoBehaviour:
     text: Three times I called. Three! By the fourth, I was going to send your sister
       up with the broom.
   - speaker: Sister
-    text: I volunteered, Bhaiya. I had a strategy.
+    text: I volunteered, <i>Dai</i> (big brother). I had a strategy.
   - speaker: Mom
-    text: "Hush. \u2014 Your father is in his room doing sadhana. Don't even breathe
-      near that door."
+    text: Hush. Your father is in his room doing <i>sadhana</i> (spiritual practice).
+      Don't even breathe near that door.
   - speaker: Mom
     text: Last week you knocked and he lost focus. He growled at the rice for an
       hour.
   - speaker: Sister
-    text: He growled at the rice.
+    text: <i>He growled at the rice.</i>
   - speaker: Mom
-    text: "Stop repeating things. \u2014 Karuna came by this morning, just after
-      the milkman."
+    text: Stop repeating things. Karuna came by this morning, just after the milkman.
   - speaker: Mom
     text: She said she found something yesterday evening. Wouldn't even put it down
       to drink tea.
   - speaker: Mom
-    text: "I asked what \u2014 she said 'Bhaiya needs to see it first.' Mysterious
-      girl."
+    text: I asked what. She said 'Lele needs to see it first.' Mysterious girl.
