@@ -156,6 +156,37 @@ namespace Bandhana.EditorTools
             return MakeSprite(tex);
         }
 
+        // Top-down chair: square wooden seat with darker corner-leg accents.
+        // Background is transparent so it can sit on a floor tile.
+        public static Sprite Chair(Color wood)
+        {
+            var tex = NewTex();
+            for (int i = 0; i < Size * Size; i++) tex.SetPixel(i % Size, i / Size, new Color(0, 0, 0, 0));
+            var dark = Darker(wood, 0.45f);
+            var light = Lighter(wood, 0.12f);
+            const int x0 = 8, x1 = 24, y0 = 8, y1 = 24;
+            for (int y = y0; y < y1; y++)
+                for (int x = x0; x < x1; x++)
+                {
+                    Color c = wood;
+                    if (((x * 7 + y * 13) & 5) == 0) c = light;
+                    tex.SetPixel(x, y, c);
+                }
+            for (int x = x0; x < x1; x++) { tex.SetPixel(x, y0, dark); tex.SetPixel(x, y1 - 1, dark); }
+            for (int y = y0; y < y1; y++) { tex.SetPixel(x0, y, dark); tex.SetPixel(x1 - 1, y, dark); }
+            // Corner legs
+            for (int dx = 0; dx < 2; dx++)
+                for (int dy = 0; dy < 2; dy++)
+                {
+                    tex.SetPixel(x0 - 2 + dx, y0 - 2 + dy, dark);
+                    tex.SetPixel(x1 + dx,     y0 - 2 + dy, dark);
+                    tex.SetPixel(x0 - 2 + dx, y1 + dy,     dark);
+                    tex.SetPixel(x1 + dx,     y1 + dy,     dark);
+                }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
         // Top-down round plate with a small mound of food in the middle.
         // Background is transparent so it overlays the table tile beneath.
         public static Sprite Plate(Color rim, Color food)

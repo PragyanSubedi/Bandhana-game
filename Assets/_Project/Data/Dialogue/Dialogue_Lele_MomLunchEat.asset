@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1b77b3898bac999e908216c0f6bf6e3, type: 3}
+  m_Name: Dialogue_Lele_MomLunchEat
+  m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
+  lines:
+  - speaker: 
+    text: You sit. The lentil soup is, annoyingly, very good.
+  - speaker: Sister
+    text: Mama, when I'm famous I'll buy you a fridge that talks.
+  - speaker: Mom
+    text: I don't want a fridge that talks. I have you.
+  - speaker: Sister
+    text: That's mean and also funny. I'm putting it in a song.
+  - speaker: 
+    text: You finish. Mom slides a glass of water across the table without looking.
+  - speaker: Mom
+    text: Now go find Karuna before she comes back here and starts knocking again.
+  - speaker: Mom
+    text: And be home before dark. Your father will surface around then. He'll want
+      to see you.

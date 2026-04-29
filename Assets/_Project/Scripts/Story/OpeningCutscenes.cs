@@ -47,8 +47,10 @@ namespace Bandhana.Story
         }
 
         // Mom, Lele, and Sister all walk over to the dining table on the left
-        // and stand at their seat tiles north of the plates. Coroutines run in
-        // parallel so they move together.
+        // and take their chairs (Lele = north, Mom = west, Sister = east —
+        // the south chair stays empty for Dad). Coroutines run in parallel so
+        // they move together; routes go around the table to avoid passing
+        // through it.
         static IEnumerator WalkAllToTable()
         {
             var lele   = GameObject.Find("Player");
@@ -62,10 +64,10 @@ namespace Bandhana.Story
                     new Vector2[] { new Vector2(0, 0), new Vector2(-3, 0) }, speed)));
             if (mom != null)
                 coros.Add(CutsceneRunner.Instance.StartCoroutine(WalkPath(mom.transform,
-                    new Vector2[] { new Vector2(-1, 0), new Vector2(-4, 0) }, speed)));
+                    new Vector2[] { new Vector2(-1, 0), new Vector2(-4, 0), new Vector2(-4, -1) }, speed)));
             if (sister != null)
                 coros.Add(CutsceneRunner.Instance.StartCoroutine(WalkPath(sister.transform,
-                    new Vector2[] { new Vector2(1, 0), new Vector2(-2, 0) }, speed)));
+                    new Vector2[] { new Vector2(1, -1), new Vector2(-1, -1) }, speed)));
 
             foreach (var c in coros) yield return c;
         }

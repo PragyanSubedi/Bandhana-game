@@ -328,22 +328,27 @@ namespace Bandhana.EditorTools
             MakeNPC("Sister", new Vector3(1, -1, 0),
                     new Color(0.95f, 0.70f, 0.55f), D.sisterIdle);
 
-            // Dining table on the LEFT — three bench tiles side by side so all
-            // three of them can sit. Plates overlaid (no collider) so they sit
-            // visually on top of the table.
+            // Dining table on the LEFT — a 2-tile rectangle with one chair on
+            // each of the four sides. Lele takes the north chair, Mom the
+            // west, Sister the east; the south chair stays empty (Dad's seat
+            // — he's in his sadhana). Plates sit on the table tiles.
             var tableWood = new Color(0.55f, 0.40f, 0.25f);
-            Decor(new Vector3(-4, -1, 0), tableWood, 2);
+            var chairWood = new Color(0.50f, 0.36f, 0.22f);
+            // Table — 2 tiles, blocking
             Decor(new Vector3(-3, -1, 0), tableWood, 2);
             Decor(new Vector3(-2, -1, 0), tableWood, 2);
+            // Chairs — non-blocking so a person can stand "on" the chair
+            SpawnTile(null, "Chair_N", -3,  0, SpriteFactory.Chair(chairWood), sortingOrder: 4, hasCollider: false);
+            SpawnTile(null, "Chair_S", -3, -2, SpriteFactory.Chair(chairWood), sortingOrder: 4, hasCollider: false);
+            SpawnTile(null, "Chair_E", -1, -1, SpriteFactory.Chair(chairWood), sortingOrder: 4, hasCollider: false);
+            SpawnTile(null, "Chair_W", -4, -1, SpriteFactory.Chair(chairWood), sortingOrder: 4, hasCollider: false);
+            // Plates — on the table tiles, two food colors
             var plateRim = new Color(0.95f, 0.92f, 0.85f);
-            SpawnTile(null, "Plate_L", -4, -1,
+            SpawnTile(null, "Plate_L", -3, -1,
                       SpriteFactory.Plate(plateRim, new Color(0.95f, 0.78f, 0.30f)),
                       sortingOrder: 6, hasCollider: false);
-            SpawnTile(null, "Plate_M", -3, -1,
-                      SpriteFactory.Plate(plateRim, new Color(0.45f, 0.65f, 0.30f)),
-                      sortingOrder: 6, hasCollider: false);
             SpawnTile(null, "Plate_R", -2, -1,
-                      SpriteFactory.Plate(plateRim, new Color(0.85f, 0.45f, 0.30f)),
+                      SpriteFactory.Plate(plateRim, new Color(0.45f, 0.65f, 0.30f)),
                       sortingOrder: 6, hasCollider: false);
 
             // Parents' bedroom door — set into the east wall at (6, 0) where
