@@ -10,14 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e1b77b3898bac999e908216c0f6bf6e3, type: 3}
-  m_Name: Dialogue_KarunaTU
+  m_Name: Dialogue_Lele_MomKitchenIntro
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
-  - speaker: Karuna
-    text: There you are! Took you long enough.
-  - speaker: Karuna
-    text: I found this in front of my house yesterday evening.
-  - speaker: Karuna
-    text: It's a damaru, like the small drums the wandering monks carry.
-  - speaker: Karuna
-    text: Bhotu won't stop barking at it. Look. Go on. Try it.
+  - speaker: Mom
+    text: Look at this face. Look at it. Two o'clock and his hair is its own country.
+  - speaker: Mom
+    text: Three times I called. Three! By the fourth, I was going to send your sister
+      up with the broom.

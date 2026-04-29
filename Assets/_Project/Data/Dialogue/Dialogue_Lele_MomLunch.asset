@@ -14,11 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
   lines:
   - speaker: Mom
-    text: Sit. The daal is still warm. Bhaat from this morning, but I added ghee.
+    text: Sit. The lentil soup is still warm. Rice from this morning, but I added
+      butter.
   - speaker: Mom
-    text: There's saag too. Don't make a face. I saw the face.
+    text: There's spinach too. Don't make a face. I saw the face.
   - speaker: 
-    text: You sit. The daal is, annoyingly, very good.
+    text: You sit. The lentil soup is, annoyingly, very good.
   - speaker: Sister
     text: Mama, when I'm famous I'll buy you a fridge that talks.
   - speaker: Mom

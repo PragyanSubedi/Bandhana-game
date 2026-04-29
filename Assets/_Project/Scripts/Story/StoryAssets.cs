@@ -11,7 +11,8 @@ namespace Bandhana.Story
     {
         [Header("Opening dialogue")]
         public DialogueSO momShouts;
-        public DialogueSO momKitchen;
+        public DialogueSO momKitchenIntro;     // Mom's first lines, before Sister chimes in
+        public DialogueSO momKitchenAfter;     // Sister's first quip onward
         public DialogueSO sisterMusicStar;
         public DialogueSO momLunch;
         public DialogueSO karunasDad;

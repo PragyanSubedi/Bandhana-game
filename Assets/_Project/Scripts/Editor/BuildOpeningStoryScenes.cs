@@ -26,7 +26,7 @@ namespace Bandhana.EditorTools
 
         class StoryDialogues
         {
-            public DialogueSO momShouts, momKitchen, sisterMusicStar, momLunch;
+            public DialogueSO momShouts, momKitchenIntro, momKitchenAfter, sisterMusicStar, momLunch;
             public DialogueSO karunasDad, karunaTUGarden, damaruPickup;
             public DialogueSO leleAlone, emptyStreet;
             public DialogueSO bajeMeeting, bajeAstralLore, bajeOutside;
@@ -95,9 +95,13 @@ namespace Bandhana.EditorTools
                 ("Mom (downstairs)", "Were you on that game all night again? Get down here!"),
                 ("", "You sit up. The bedroom is too bright. Your eyes hurt."));
 
-            D.momKitchen = Dlg("Dialogue_Lele_MomKitchen",
+            // Split into two parts so Sister can walk over to Lele in between,
+            // arriving just as her speaking turn begins.
+            D.momKitchenIntro = Dlg("Dialogue_Lele_MomKitchenIntro",
                 ("Mom", "Look at this face. Look at it. Two o'clock and his hair is its own country."),
-                ("Mom", "Three times I called. Three! By the fourth, I was going to send your sister up with the broom."),
+                ("Mom", "Three times I called. Three! By the fourth, I was going to send your sister up with the broom."));
+
+            D.momKitchenAfter = Dlg("Dialogue_Lele_MomKitchenAfter",
                 ("Sister", "I volunteered, <i>Dai</i> (big brother). I had a strategy."),
                 ("Mom", "Hush. Your father is in his room doing <i>sadhana</i> (spiritual practice). Don't even breathe near that door."),
                 ("Mom", "Last week you knocked and he lost focus. He growled at the rice for an hour."),
@@ -118,9 +122,9 @@ namespace Bandhana.EditorTools
                 ("Sister", "But you have to fix your hair first. It looks like a goat slept on it."));
 
             D.momLunch = Dlg("Dialogue_Lele_MomLunch",
-                ("Mom", "Sit. The daal is still warm. Bhaat from this morning, but I added ghee."),
-                ("Mom", "There's saag too. Don't make a face. I saw the face."),
-                ("", "You sit. The daal is, annoyingly, very good."),
+                ("Mom", "Sit. The lentil soup is still warm. Rice from this morning, but I added butter."),
+                ("Mom", "There's spinach too. Don't make a face. I saw the face."),
+                ("", "You sit. The lentil soup is, annoyingly, very good."),
                 ("Sister", "Mama, when I'm famous I'll buy you a fridge that talks."),
                 ("Mom", "I don't want a fridge that talks. I have you."),
                 ("Sister", "That's mean and also funny. I'm putting it in a song."),
@@ -136,7 +140,7 @@ namespace Bandhana.EditorTools
             D.karunaTUGarden = Dlg("Dialogue_KarunaTU",
                 ("Karuna", "There you are! Took you long enough."),
                 ("Karuna", "I found this in front of my house yesterday evening."),
-                ("Karuna", "It's a damaru, like the ones the sadhus carry."),
+                ("Karuna", "It's a damaru, like the small drums the wandering monks carry."),
                 ("Karuna", "Bhotu won't stop barking at it. Look. Go on. Try it."));
 
             D.damaruPickup = Dlg("Dialogue_DamaruPlay",
@@ -313,18 +317,11 @@ namespace Bandhana.EditorTools
             approach.speed = 2f;
             approach.forbiddenFlag = "ateLunch";
 
-            // Sister NPC — starts at the dining table; on first entry she
-            // walks east, then north, ending east of Lele so she's flanking
-            // him with Mom on the other side.
-            var sister = MakeNPC("Sister", new Vector3(-1, -1, 0),
-                                 new Color(0.95f, 0.70f, 0.55f), D.sisterIdle);
-            var sisterApproach = sister.AddComponent<NPCApproachOnSpawn>();
-            sisterApproach.waypoints = new Vector2[] {
-                new Vector2(1, -1),   // east first
-                new Vector2(1,  3),   // then straight north toward Lele
-            };
-            sisterApproach.speed = 3f;          // a touch faster than Mom so she keeps up
-            sisterApproach.forbiddenFlag = "ateLunch";
+            // Sister NPC — sits at the dining table. The kitchen cutscene
+            // walks her over to Lele the moment her first speaking turn arrives;
+            // she doesn't move on scene start.
+            MakeNPC("Sister", new Vector3(-1, -1, 0),
+                    new Color(0.95f, 0.70f, 0.55f), D.sisterIdle);
 
             // Dining table on the LEFT — two bench tiles side by side, with a
             // plate of food overlaid on each (no collider on the plates so they
@@ -356,7 +353,7 @@ namespace Bandhana.EditorTools
             MakeTransition(new Vector3(0, -4, 0),
                 "03_Town_Day", new Vector2(0, 5),
                 requiredFlag: "ateLunch",
-                lockedHint: "you should eat first. mom made daal bhaat.");
+                lockedHint: "you should eat first. mom made lunch.");
 
             SaveAndRegister(scene, "02_LeleHouse_Kitchen");
         }
@@ -687,7 +684,8 @@ namespace Bandhana.EditorTools
             var perScene = new GameObject("SceneStory");
             var assets = perScene.AddComponent<StoryAssets>();
             assets.momShouts        = D.momShouts;
-            assets.momKitchen       = D.momKitchen;
+            assets.momKitchenIntro  = D.momKitchenIntro;
+            assets.momKitchenAfter  = D.momKitchenAfter;
             assets.sisterMusicStar  = D.sisterMusicStar;
             assets.momLunch         = D.momLunch;
             assets.karunasDad       = D.karunasDad;

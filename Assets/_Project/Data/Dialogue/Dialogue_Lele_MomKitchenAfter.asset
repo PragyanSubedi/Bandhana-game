@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1b77b3898bac999e908216c0f6bf6e3, type: 3}
+  m_Name: Dialogue_Lele_MomKitchenAfter
+  m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
+  lines:
+  - speaker: Sister
+    text: I volunteered, <i>Dai</i> (big brother). I had a strategy.
+  - speaker: Mom
+    text: Hush. Your father is in his room doing <i>sadhana</i> (spiritual practice).
+      Don't even breathe near that door.
+  - speaker: Mom
+    text: Last week you knocked and he lost focus. He growled at the rice for an
+      hour.
+  - speaker: Sister
+    text: <i>He growled at the rice.</i>
+  - speaker: Mom
+    text: Stop repeating things. Karuna came by this morning, just after the milkman.
+  - speaker: Mom
+    text: She said she found something yesterday evening. Wouldn't even put it down
+      to drink tea.
+  - speaker: Mom
+    text: I asked what. She said 'Lele needs to see it first.' Mysterious girl.

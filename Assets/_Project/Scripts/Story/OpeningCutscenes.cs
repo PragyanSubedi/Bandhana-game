@@ -22,14 +22,35 @@ namespace Bandhana.Story
         }
 
         // ── Beat 1: kitchen — mom + sister + lunch ───────────────────────────
+        // Sister walks over to Lele only when her speaking turn arrives, not
+        // on scene start. Path: east first, then straight north.
         public static void MomKitchen() { CutsceneRunner.Instance.Run(KitchenRoutine()); }
         static IEnumerator KitchenRoutine()
         {
             var a = Assets;
-            yield return CutsceneRunner.Say(a?.momKitchen);
+            yield return CutsceneRunner.Say(a?.momKitchenIntro);
+            yield return WalkSisterToLele();
+            yield return CutsceneRunner.Say(a?.momKitchenAfter);
             yield return CutsceneRunner.Say(a?.sisterMusicStar);
             yield return CutsceneRunner.Say(a?.momLunch);
             yield return CutsceneRunner.SetFlag("ateLunch");
+        }
+
+        static IEnumerator WalkSisterToLele()
+        {
+            var sister = GameObject.Find("NPC_Sister");
+            if (sister == null) yield break;
+            Vector2[] path = { new Vector2(1, -1), new Vector2(1, 3) };
+            const float speed = 3.5f;
+            foreach (var wp in path)
+            {
+                while ((Vector2)sister.transform.position != wp)
+                {
+                    sister.transform.position = Vector2.MoveTowards(
+                        sister.transform.position, wp, speed * Time.deltaTime);
+                    yield return null;
+                }
+            }
         }
 
         // ── Beat 2: KarunaHouse — Karuna's dad ───────────────────────────────
