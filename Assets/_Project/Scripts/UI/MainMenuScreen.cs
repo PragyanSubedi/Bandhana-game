@@ -8,7 +8,7 @@ namespace Bandhana.UI
     // Title screen. New Game / Continue / Settings / Quit.
     public class MainMenuScreen : MonoBehaviour
     {
-        public string newGameSceneName = "Village";
+        public string newGameSceneName = "01_LeleBedroom_Wakeup";
 
         string status;
         float startTime;

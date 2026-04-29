@@ -6,49 +6,76 @@ using UnityEngine;
 
 namespace Bandhana.EditorTools
 {
-    // Auto-runs the opening-scene builder after every script reload so that
-    // edits to dialogue, layout, and behaviour show up the next time you press
-    // Play, without having to invoke "Bandhana → Build Lele Opening" by hand.
+    // Auto-runs the opening-scene builder + main-menu builder after every
+    // script reload so edits show up the next time you press Play, without
+    // having to invoke "Bandhana → Build Lele Opening" by hand.
     //
-    //  • Skipped while compiling, in play mode, or if the active scene has
-    //    unsaved changes (so manual edits aren't clobbered).
-    //  • Skipped on the first reload after opening Unity (so just opening the
-    //    project doesn't trigger a write).
-    //  • Reloads the active scene after rebuild if it's one of the opening
-    //    scenes, so the editor view picks up the new layout immediately.
-    //  • Toggle on/off via Bandhana → Auto-Rebuild Opening.
+    // Behaviour:
+    //  • Skipped while in play mode (would clobber state).
+    //  • Skipped if the active scene has unsaved changes — the unsaved scene
+    //    is auto-saved first if it's one of the regenerable scenes, otherwise
+    //    we log and bail.
+    //  • Reloads the active scene after rebuild if it's a regenerable scene
+    //    so the editor view picks up the new layout.
+    //  • Toggle on/off via Bandhana → Auto-Rebuild Opening (default ON).
+    //  • Run-once-now via Bandhana → Force Rebuild Now.
+    //
+    // Every step is logged with the [Bandhana] prefix so you can verify in
+    // the console that the hook is firing.
     static class AutoBuildOpeningOnReload
     {
         const string PrefKey = "Bandhana.AutoBuildOpening";
-        const string SessionArmedKey = "Bandhana.AutoBuildArmed";
-        const string MenuPath = "Bandhana/Auto-Rebuild Opening";
+        const string MenuToggle = "Bandhana/Auto-Rebuild Opening";
+        const string MenuForce  = "Bandhana/Force Rebuild Now";
 
         [DidReloadScripts]
         static void OnReload()
         {
-            if (!EditorPrefs.GetBool(PrefKey, true)) return;
-            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-            if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
-
-            // Skip the first reload of the editor session — that one fires just
-            // from opening the project and we don't want a write on launch.
-            if (!SessionState.GetBool(SessionArmedKey, false))
+            if (!EditorPrefs.GetBool(PrefKey, true))
             {
-                SessionState.SetBool(SessionArmedKey, true);
+                Debug.Log("[Bandhana] Auto-rebuild disabled — toggle via 'Bandhana → Auto-Rebuild Opening'.");
                 return;
             }
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                Debug.Log("[Bandhana] Auto-rebuild skipped — in play mode.");
+                return;
+            }
+            // Defer the actual run by one editor tick so the reload fully
+            // settles (scene serialization, asset import) before we touch
+            // anything. Without this, EditorSceneManager calls can race.
+            EditorApplication.delayCall += RunBuild;
+        }
 
+        static void RunBuild()
+        {
+            string activePath = null;
             var active = EditorSceneManager.GetActiveScene();
+            if (active.IsValid()) activePath = active.path;
+
+            // If the active scene has unsaved changes AND it's a scene we'd
+            // rebuild, save it first so it isn't clobbered.
             if (active.IsValid() && active.isDirty)
             {
-                Debug.Log("[Bandhana] Auto-rebuild skipped — active scene has unsaved changes.");
-                return;
+                if (IsRegenerableScene(activePath))
+                {
+                    Debug.Log($"[Bandhana] Saving dirty scene before auto-rebuild: {activePath}");
+                    EditorSceneManager.SaveScene(active);
+                }
+                else
+                {
+                    Debug.Log($"[Bandhana] Auto-rebuild skipped — '{activePath}' has unsaved changes.");
+                    return;
+                }
             }
 
-            string activePath = active.IsValid() ? active.path : null;
             try
             {
+                Debug.Log("[Bandhana] Auto-rebuilding opening scenes + main menu…");
                 BuildOpeningStoryScenes.BuildAllSilent();
+                BuildMainMenuScene.BuildSilent();
+                AssetDatabase.SaveAssets();
+                Debug.Log("[Bandhana] Auto-rebuild complete.");
             }
             catch (System.Exception e)
             {
@@ -56,11 +83,23 @@ namespace Bandhana.EditorTools
                 return;
             }
 
-            if (!string.IsNullOrEmpty(activePath) && activePath.Contains("/Story/"))
+            // Reload the active scene so the editor view picks up the new
+            // layout. Without this, the user sees the previous build until
+            // they manually re-open the scene.
+            if (IsRegenerableScene(activePath))
+            {
+                Debug.Log($"[Bandhana] Reloading active scene: {activePath}");
                 EditorSceneManager.OpenScene(activePath, OpenSceneMode.Single);
+            }
         }
 
-        [MenuItem(MenuPath)]
+        static bool IsRegenerableScene(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+            return path.Contains("/Story/") || path.EndsWith("/MainMenu.unity");
+        }
+
+        [MenuItem(MenuToggle)]
         static void Toggle()
         {
             bool now = !EditorPrefs.GetBool(PrefKey, true);
@@ -68,11 +107,18 @@ namespace Bandhana.EditorTools
             Debug.Log($"[Bandhana] Auto-rebuild opening scenes: {(now ? "ON" : "OFF")}");
         }
 
-        [MenuItem(MenuPath, true)]
+        [MenuItem(MenuToggle, true)]
         static bool ToggleValidate()
         {
-            Menu.SetChecked(MenuPath, EditorPrefs.GetBool(PrefKey, true));
+            Menu.SetChecked(MenuToggle, EditorPrefs.GetBool(PrefKey, true));
             return true;
+        }
+
+        [MenuItem(MenuForce)]
+        static void ForceRebuild()
+        {
+            Debug.Log("[Bandhana] Force-rebuild requested by menu.");
+            RunBuild();
         }
     }
 }

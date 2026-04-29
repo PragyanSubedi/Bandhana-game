@@ -17,6 +17,15 @@ namespace Bandhana.EditorTools
         public static void Build()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            BuildSilent();
+            EditorUtility.DisplayDialog("Bandhana — Main Menu",
+                "Built " + ScenePath + "\n\nRegistered at build index 0 (entry scene).",
+                "OK");
+        }
+
+        // No-prompt variant for the auto-rebuild hook.
+        public static void BuildSilent()
+        {
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -35,15 +44,11 @@ namespace Bandhana.EditorTools
             // Title controller
             var ui = new GameObject("MainMenu");
             var screen = ui.AddComponent<MainMenuScreen>();
-            screen.newGameSceneName = "Village";
+            screen.newGameSceneName = "01_LeleBedroom_Wakeup";
             ui.AddComponent<SettingsMenu>();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             EnsureSceneFirstInBuildSettings(ScenePath);
-
-            EditorUtility.DisplayDialog("Bandhana — Main Menu",
-                "Built " + ScenePath + "\n\nRegistered at build index 0 (entry scene).",
-                "OK");
         }
 
         static void EnsureSceneFirstInBuildSettings(string path)

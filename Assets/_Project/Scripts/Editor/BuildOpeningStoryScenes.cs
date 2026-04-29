@@ -39,6 +39,7 @@ namespace Bandhana.EditorTools
 
             // Misc NPCs (sister, dog)
             public DialogueSO sisterIdle;
+            public DialogueSO momIdleAfterLunch;
         }
 
         [MenuItem("Bandhana/Build Lele Opening")]
@@ -210,6 +211,11 @@ namespace Bandhana.EditorTools
             D.parentsDoorLocked = Dlg("Dialogue_ParentsDoorLocked",
                 ("Lele", "I shouldn't open this right now. Dad is meditating."));
 
+            D.momIdleAfterLunch = Dlg("Dialogue_Lele_MomIdleAfterLunch",
+                ("Mom", "Why are you still here? Karuna's been waiting all morning."),
+                ("Mom", "Go on. The girl will come back and knock if you don't."),
+                ("Mom", "And remember. Home before dark."));
+
             D.sisterIdle = Dlg("Dialogue_SisterIdle",
                 ("Sister", "<i>Dai</i>, do you know any songs? I know seven."),
                 ("Sister", "I forgot four of them. The other three are extremely good though."),
@@ -312,6 +318,9 @@ namespace Bandhana.EditorTools
             var mom = MakeBeatNPC("Mom", new Vector3(-3, 2, 0),
                                   new Color(0.85f, 0.55f, 0.45f),
                                   OpeningBeat.MomKitchen, completionFlag: "ateLunch");
+            // After the kitchen cutscene, E-pressing Mom replays a "go find
+            // Karuna" reminder rather than going inert.
+            mom.GetComponent<Interactable>().afterDialogue = D.momIdleAfterLunch;
             var approach = mom.AddComponent<NPCApproachOnSpawn>();
             // Right-angle path: walk east first to (-1, 2), then north to
             // (-1, 3) — one tile west of Lele's spawn at (0, 3). No diagonal.
@@ -756,7 +765,10 @@ namespace Bandhana.EditorTools
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = SpriteFactory.NPC(color);
             sr.sortingOrder = 6;
-            var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true; col.size = Vector2.one;
+            // Solid collider (non-trigger) so the player can't walk through them.
+            // OverlapBoxAll in PlayerController.TryInteract still finds it for
+            // the E-press dialogue.
+            var col = go.AddComponent<BoxCollider2D>(); col.size = Vector2.one;
             var npc = go.AddComponent<NPC>();
             npc.npcName = name;
             npc.dialogue = dialogue;
@@ -773,7 +785,8 @@ namespace Bandhana.EditorTools
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = SpriteFactory.NPC(color);
             sr.sortingOrder = 6;
-            var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true; col.size = Vector2.one;
+            // Solid collider (non-trigger) so the player can't walk through.
+            var col = go.AddComponent<BoxCollider2D>(); col.size = Vector2.one;
             var inter = go.AddComponent<Interactable>();
             inter.completionFlag = completionFlag;
             inter.forbiddenFlag = completionFlag;
