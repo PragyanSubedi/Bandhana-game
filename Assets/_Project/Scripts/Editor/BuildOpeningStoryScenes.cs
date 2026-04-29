@@ -399,11 +399,13 @@ namespace Bandhana.EditorTools
                      roofColor: new Color(0.58f, 0.30f, 0.22f),
                      interiorScene: "02_LeleHouse_Kitchen", interiorSpawn: new Vector2(0, 3));
 
-            // Karuna's house (east) — door enters Karuna house scene
+            // Karuna's house (east) — door at (9, -2), stoop at (9, -3).
+            // Spawn the player just inside the south door of the interior so
+            // they walk in like they came through the door.
             Building("KarunaHouse", new Vector2Int(7, -2), 5, 3, 2,
                      wallColor: new Color(0.72f, 0.55f, 0.32f),
                      roofColor: new Color(0.45f, 0.32f, 0.20f),
-                     interiorScene: "04_KarunaHouse_Day", interiorSpawn: new Vector2(0, 3));
+                     interiorScene: "04_KarunaHouse_Day", interiorSpawn: new Vector2(0, -3));
 
             // TU garden gate (NW corner) — leads to scene 05
             MakeTransition(new Vector3(-12, 6, 0),
@@ -425,21 +427,27 @@ namespace Bandhana.EditorTools
             BasicCamera(0.14f, 0.10f, 0.07f);
             MakeUIRoot();
             MakeStoryRoot();
-            MakePlayer(new Vector3(0, 3, 0));
+            // Spawn near the south door so it reads like the player has just
+            // walked in.
+            MakePlayer(new Vector3(0, -3, 0));
 
             BuildPerimeter(5, 4, southGapX: 0);
 
+            // Karuna's Dad sits in the middle so the player walks up to him.
             MakeBeatNPC("KarunaDad", new Vector3(-2, 1, 0),
                         new Color(0.55f, 0.45f, 0.35f),
                         OpeningBeat.KarunaDad, completionFlag: "knowsKarunaAtTU");
 
-            // Decor
+            // Decor — kept clear of the door tile (0, -3) so the entry path
+            // isn't visually blocked.
             Decor(new Vector3( 2, 1, 0), new Color(0.40f, 0.55f, 0.30f), 0);
-            Decor(new Vector3( 0,-2, 0), new Color(0.50f, 0.40f, 0.25f), 2);
+            Decor(new Vector3( 3,-2, 0), new Color(0.50f, 0.40f, 0.25f), 2);
 
-            // South door back to town
+            // South door back to town. Spawn at the stoop directly in front of
+            // the door (9, -3), not offset west, so the player exits exactly
+            // where the door is.
             MakeTransition(new Vector3(0, -4, 0),
-                "03_Town_Day", new Vector2(7, -3),
+                "03_Town_Day", new Vector2(9, -3),
                 requiredFlag: null, lockedHint: "");
 
             SaveAndRegister(scene, "04_KarunaHouse_Day");
