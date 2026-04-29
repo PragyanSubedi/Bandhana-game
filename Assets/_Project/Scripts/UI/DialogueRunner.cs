@@ -85,7 +85,7 @@ namespace Bandhana.UI
             UITheme.Ensure();
 
             const float margin = 24f;
-            const float boxH = 170f;
+            const float boxH = 210f;
             var rect = new Rect(margin, Screen.height - margin - boxH, Screen.width - margin * 2f, boxH);
             UITheme.DrawPanel(rect);
 

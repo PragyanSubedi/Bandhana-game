@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1b77b3898bac999e908216c0f6bf6e3, type: 3}
+  m_Name: Dialogue_BajeOutside
+  m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
+  lines:
+  - speaker: Baje
+    text: Stay close. Do not let them see you.
+  - speaker: Baje
+    text: In this state you are unfinished. They are drawn to that.
+  - speaker: Lele
+    text: "\u2026that figure at the end of the street. Who is it?"
+  - speaker: Baje
+    text: Don't ask. Move. Karuna may not still be Karuna.

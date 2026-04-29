@@ -108,6 +108,54 @@ namespace Bandhana.EditorTools
             return Sprite.Create(tex, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), Size);
         }
 
+        // 1x2 bed: bottom tile = mattress (sheets + base), top tile = pillow + headboard.
+        public static Sprite BedBase(Color sheets)
+        {
+            var tex = NewTex();
+            var dark = Darker(sheets, 0.45f);
+            var light = Lighter(sheets, 0.10f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    Color c = sheets;
+                    if (y < 4) c = dark;                              // wood foot-board
+                    else if (y == 4) c = Lighter(dark, 0.2f);
+                    else if ((x % 6) == 0 && y > 4 && y < Size - 2) c = light; // sheet creases
+                    if (x == 0 || x == Size - 1) c = dark;            // bed-frame sides
+                    tex.SetPixel(x, y, c);
+                }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
+        public static Sprite BedHead(Color sheets, Color pillow)
+        {
+            var tex = NewTex();
+            var dark = Darker(sheets, 0.45f);
+            for (int y = 0; y < Size; y++)
+                for (int x = 0; x < Size; x++)
+                {
+                    Color c = sheets;
+                    if (y > Size - 8) c = dark;                        // wood headboard
+                    if (x == 0 || x == Size - 1) c = dark;             // bed-frame sides
+                    tex.SetPixel(x, y, c);
+                }
+            // Pillow oval near the top
+            for (int y = 4; y < 16; y++)
+                for (int x = 5; x < Size - 5; x++)
+                {
+                    float dx = (x - Size / 2f) / (Size / 2f - 5f);
+                    float dy = (y - 10f) / 6f;
+                    if (dx * dx + dy * dy < 1f)
+                    {
+                        Color p = (dx * dx + dy * dy > 0.7f) ? Darker(pillow, 0.20f) : pillow;
+                        tex.SetPixel(x, y, p);
+                    }
+                }
+            tex.Apply();
+            return MakeSprite(tex);
+        }
+
         public static Sprite Solid(Color color)
         {
             var tex = new Texture2D(Size, Size, TextureFormat.RGBA32, false)

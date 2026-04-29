@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1b77b3898bac999e908216c0f6bf6e3, type: 3}
+  m_Name: Dialogue_KarunaTwist
+  m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
+  lines:
+  - speaker: Karuna
+    text: You took long enough.
+  - speaker: Lele
+    text: "Karuna \u2014 what \u2014"
+  - speaker: Karuna
+    text: I didn't find this. It was waiting.
+  - speaker: Karuna
+    text: Listen. Isn't it clearer here?
+  - speaker: Baje
+    text: She isn't attacking you. She's anchoring it. Break the rhythm.
+  - speaker: Baje
+    text: "Match her beat \u2014 then disrupt it. Press SPACE between her drums."

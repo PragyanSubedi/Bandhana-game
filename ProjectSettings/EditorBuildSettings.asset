@@ -29,6 +29,33 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/MainMenu/Credits.unity
     guid: 81e6eb2e38d92176588994e88e06832c
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/01_LeleBedroom_Wakeup.unity
+    guid: 404df29d06467135785cf26767579351
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/02_LeleHouse_Kitchen.unity
+    guid: 8398bd4e4c6b00090a23becfef7ee852
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/03_Town_Day.unity
+    guid: 327900173856bcece83555ae8de03040
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/04_KarunaHouse_Day.unity
+    guid: d82603f72277d1e72aa0641a92a71e92
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/05_TUGarden_Day.unity
+    guid: 534d4640d61b8ca6c9a9d7f86e19e0dd
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/06_TUGarden_Night.unity
+    guid: 0bcf1e8efb41a2316bf1572353743415
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/07_Town_Night_Astral.unity
+    guid: c50be9e775e4a3fc2bddd4a5f05972ef
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/08_LeleHouse_Astral.unity
+    guid: 52bdcc89f25d1d6ae8f5fdd1a3622514
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/09_TUGarden_Boss.unity
+    guid: 3155c0fabcdc4dfcda11c15e20239e7c
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -144,12 +144,12 @@ namespace Bandhana.UI
                 normal = { textColor = SaffronSoft },
             };
             DialogueLine = new GUIStyle {
-                fontSize = 18, wordWrap = true,
+                fontSize = 26, wordWrap = true,
                 alignment = TextAnchor.UpperLeft,
                 normal = { textColor = new Color(0.96f, 0.94f, 0.86f) },
             };
             ContinueHint = new GUIStyle {
-                fontSize = 12, alignment = TextAnchor.MiddleRight,
+                fontSize = 14, alignment = TextAnchor.MiddleRight,
                 fontStyle = FontStyle.Italic,
                 normal = { textColor = new Color(0.78f, 0.72f, 0.55f) },
             };

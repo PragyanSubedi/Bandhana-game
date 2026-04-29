@@ -85,7 +85,8 @@ namespace Bandhana.EditorTools
             D = new StoryDialogues();
 
             D.momShouts = Dlg("Dialogue_Lele_MomShouts",
-                ("Mom (downstairs)", "Lele! It's almost three in the afternoon!"),
+                ("Mom (downstairs)", "Lele!… Lele!!"),
+                ("Mom (downstairs)", "It's almost three in the afternoon!"),
                 ("Mom (downstairs)", "Were you on that game all night again? Get down here!"),
                 ("", "You sit up. The bedroom is too bright. Your eyes hurt."));
 
@@ -182,32 +183,75 @@ namespace Bandhana.EditorTools
         }
 
         // ── Scene 01: bedroom wakeup ─────────────────────────────────────────
+        // Layout: 9-wide x 7-tall room. Lele asleep on the bed at the right
+        // wall, downstairs door centered on the east wall. Mom's shouting fires
+        // automatically on scene Start, before Lele moves.
         static void Build_01_Bedroom()
         {
             var scene = NewScene("01_LeleBedroom_Wakeup");
             BasicCamera(0.10f, 0.09f, 0.16f);
             MakeUIRoot();
             MakeStoryRoot();
-            MakePlayer(new Vector3(0, 0, 0));
 
-            // Small bedroom: 9 wide x 7 tall
-            BuildPerimeter(4, 3, southGapX: 0);
+            // Lele spawns on the bed (left side, on the head tile).
+            MakePlayer(new Vector3(-3, 1, 0));
 
-            // Bed (block of 3 walls)
-            Wall(new Vector2(-3, 1)); Wall(new Vector2(-2, 1)); Wall(new Vector2(-3, 2));
-            // Desk
-            Wall(new Vector2( 3, 1)); Wall(new Vector2( 3, 2));
+            // Perimeter is solid — the downstairs doorway sits inside the room,
+            // not in the wall line.
+            BuildPerimeter(4, 3);
 
-            // Auto-trigger near the bed: mom shouts (fires once when player steps onto tile)
-            MakeAutoTrigger("Trigger_MomShouts", new Vector3(0, 1, 0),
-                            OpeningBeat.MomShouts, completionFlag: "woke");
+            // Bed (left side of the room) — 1×2 vertical: head at (-3,1),
+            // base at (-3,0). Lele stands on the head tile; both are non-blocking
+            // so movement off the bed is free.
+            SpawnBedTile(new Vector3(-3, 0, 0),
+                         SpriteFactory.BedBase(new Color(0.85f, 0.78f, 0.70f)));
+            SpawnBedTile(new Vector3(-3, 1, 0),
+                         SpriteFactory.BedHead(new Color(0.85f, 0.78f, 0.70f),
+                                               new Color(0.95f, 0.92f, 0.85f)));
 
-            // South-edge door — locked until "woke" flag set
-            MakeTransition(new Vector3(0, -3, 0),
+            // Desk on the right side (single tile, leaves room above for the doorway)
+            Wall(new Vector2(3, 1));
+            // Small chest of drawers below the desk
+            Decor(new Vector3(3, -1, 0), new Color(0.50f, 0.40f, 0.25f), 2);
+
+            // Mom shouts on Start, before player moves. Suppressed if the
+            // player has already woken (e.g., walked back upstairs from the
+            // kitchen).
+            MakeStartTrigger("Trigger_MomShouts_OnStart", OpeningBeat.MomShouts,
+                             forbiddenFlag: "woke");
+
+            // Downstairs doorway — top-right corner of the room, one tile inside
+            // both walls. Locked until "woke" flag set by the shout cutscene.
+            // Player returning from kitchen spawns at (2, 2), one tile west of
+            // the doorway, so they don't immediately re-trigger it.
+            MakeTransition(new Vector3(3, 2, 0),
                 "02_LeleHouse_Kitchen", new Vector2(0, 3),
-                requiredFlag: "woke", lockedHint: "mom is still shouting. better wake up first.");
+                requiredFlag: "woke",
+                lockedHint: "mom is still shouting. better answer her first.");
 
             SaveAndRegister(scene, "01_LeleBedroom_Wakeup");
+        }
+
+        // Decor-style sprite tile with no collider — used for the bed.
+        static void SpawnBedTile(Vector3 pos, Sprite sprite)
+        {
+            var go = new GameObject($"Bed_{pos.x}_{pos.y}");
+            go.transform.position = pos;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            sr.sortingOrder = 4;  // below player (player is sortingOrder 10)
+        }
+
+        // Spawns an invisible GameObject that fires an OpeningBeat on Start().
+        // No trigger collider — runs once per scene load. Pass a forbiddenFlag
+        // so the cutscene doesn't replay if the player returns to this scene.
+        static void MakeStartTrigger(string name, OpeningBeat beat, string forbiddenFlag = null)
+        {
+            var go = new GameObject(name);
+            var inv = go.AddComponent<OpeningInvoker>();
+            inv.beat = beat;
+            inv.fireOnStart = true;
+            inv.fireOnStartForbiddenFlag = forbiddenFlag;
         }
 
         // ── Scene 02: kitchen ────────────────────────────────────────────────
@@ -233,6 +277,13 @@ namespace Bandhana.EditorTools
 
             // Table decor
             Decor(new Vector3( 0, 0, 0), new Color(0.55f, 0.40f, 0.25f), 2);  // bench/table
+
+            // Stairs back upstairs — same tile the player spawns on. Walking
+            // away and back onto it loads the bedroom. (CheckTriggers only
+            // fires on completed steps, so the spawn itself doesn't activate it.)
+            MakeTransition(new Vector3(0, 3, 0),
+                "01_LeleBedroom_Wakeup", new Vector2(2, 2),
+                requiredFlag: null, lockedHint: "");
 
             // South door to town — gated by "ateLunch"
             MakeTransition(new Vector3(0, -4, 0),

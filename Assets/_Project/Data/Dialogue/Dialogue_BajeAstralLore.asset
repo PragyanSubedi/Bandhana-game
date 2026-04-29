@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1b77b3898bac999e908216c0f6bf6e3, type: 3}
+  m_Name: Dialogue_BajeAstralLore
+  m_EditorClassIdentifier: Assembly-CSharp::Bandhana.Data.DialogueSO
+  lines:
+  - speaker: Old Man
+    text: Your phone won't work here, child. Sit down.
+  - speaker: Old Man
+    text: When you struck the damaru, you flipped the state of the world.
+  - speaker: Old Man
+    text: "The physical and the astral \u2014 most never know there is a difference."
+  - speaker: Old Man
+    text: Your body is in the astral now. Mine has been here a long time.
+  - speaker: Old Man
+    text: I am called Baje. The damaru pulled you across. We must find it again.
+  - speaker: Old Man
+    text: 'But understand: each time the damaru is struck, the boundary thins.'
+  - speaker: Old Man
+    text: Something on the other side has noticed you.

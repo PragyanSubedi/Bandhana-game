@@ -23,6 +23,8 @@ namespace Bandhana.Story
     public class OpeningInvoker : MonoBehaviour
     {
         public OpeningBeat beat;
+        public bool fireOnStart;
+        public string fireOnStartForbiddenFlag;  // skip fireOnStart if set
 
         void Awake()
         {
@@ -30,6 +32,14 @@ namespace Bandhana.Story
             if (inter != null) inter.onInteract.AddListener(Fire);
             var auto  = GetComponent<Bandhana.Overworld.AutoCutsceneTrigger>();
             if (auto  != null) auto.onTriggered.AddListener(Fire);
+        }
+
+        void Start()
+        {
+            if (!fireOnStart) return;
+            if (!string.IsNullOrEmpty(fireOnStartForbiddenFlag)
+                && Bandhana.Core.GameManager.Instance.HasFlag(fireOnStartForbiddenFlag)) return;
+            Fire();
         }
 
         public void Fire()
