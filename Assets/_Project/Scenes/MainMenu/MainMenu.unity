@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &215499148
+--- !u!1 &666696151
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,9 +127,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 215499151}
-  - component: {fileID: 215499150}
-  - component: {fileID: 215499149}
+  - component: {fileID: 666696154}
+  - component: {fileID: 666696153}
+  - component: {fileID: 666696152}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -137,21 +137,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &215499149
+--- !u!81 &666696152
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 215499148}
+  m_GameObject: {fileID: 666696151}
   m_Enabled: 1
---- !u!20 &215499150
+--- !u!20 &666696153
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 215499148}
+  m_GameObject: {fileID: 666696151}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -196,13 +196,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &215499151
+--- !u!4 &666696154
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 215499148}
+  m_GameObject: {fileID: 666696151}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
@@ -211,7 +211,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &482581869
+--- !u!1 &1936302234
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -219,9 +219,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 482581872}
-  - component: {fileID: 482581871}
-  - component: {fileID: 482581870}
+  - component: {fileID: 1936302237}
+  - component: {fileID: 1936302236}
+  - component: {fileID: 1936302235}
   m_Layer: 0
   m_Name: MainMenu
   m_TagString: Untagged
@@ -229,38 +229,38 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &482581870
+--- !u!114 &1936302235
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 482581869}
+  m_GameObject: {fileID: 1936302234}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ddc56b487513ee050932817da4184ecd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.UI.SettingsMenu
---- !u!114 &482581871
+--- !u!114 &1936302236
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 482581869}
+  m_GameObject: {fileID: 1936302234}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 19a2c616dfcea9c7492e727b02afd236, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bandhana.UI.MainMenuScreen
   newGameSceneName: 01_LeleBedroom_Wakeup
---- !u!4 &482581872
+--- !u!4 &1936302237
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 482581869}
+  m_GameObject: {fileID: 1936302234}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -273,5 +273,5 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 215499151}
-  - {fileID: 482581872}
+  - {fileID: 666696154}
+  - {fileID: 1936302237}

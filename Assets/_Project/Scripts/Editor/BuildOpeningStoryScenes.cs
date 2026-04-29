@@ -391,7 +391,9 @@ namespace Bandhana.EditorTools
             MakeStoryRoot();
             MakePlayer(new Vector3(0, 5, 0));
 
-            BuildPerimeter(12, 8);
+            // Town perimeter — west wall has a gap at y=6 where the path to
+            // the TU garden begins.
+            BuildPerimeter(12, 8, westGapY: 6);
 
             // Lele's house (north — door re-enters kitchen)
             Building("LeleHouse", new Vector2Int(-3, 5), 6, 3, 3,
@@ -407,7 +409,9 @@ namespace Bandhana.EditorTools
                      roofColor: new Color(0.45f, 0.32f, 0.20f),
                      interiorScene: "04_KarunaHouse_Day", interiorSpawn: new Vector2(0, -3));
 
-            // TU garden gate (NW corner) — leads to scene 05
+            // TU garden gate (west wall, y=6) — fits the gap in the perimeter.
+            // Walking west onto this tile loads scene 05 and spawns the player
+            // just inside its south gate at (0, -5).
             MakeTransition(new Vector3(-12, 6, 0),
                 "05_TUGarden_Day", new Vector2(0, -5),
                 requiredFlag: null, lockedHint: "");
@@ -492,9 +496,11 @@ namespace Bandhana.EditorTools
                                  requiredFlag: "metKarunaAtTU",
                                  forbiddenFlag: "damaruPlayedOnce");
 
-            // South gate back to town
+            // South gate back to town. Spawn the player one tile east of the
+            // west-wall gap (at -11, 6) so they land just inside town and can
+            // walk back west to re-enter TU garden if they want.
             MakeTransition(new Vector3(0, -7, 0),
-                "03_Town_Day", new Vector2(-11, 5),
+                "03_Town_Day", new Vector2(-11, 6),
                 requiredFlag: null, lockedHint: "");
 
             SaveAndRegister(scene, "05_TUGarden_Day");
