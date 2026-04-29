@@ -44,9 +44,19 @@ namespace Bandhana.EditorTools
         public static void BuildAll()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            BuildAllSilent();
+            EditorUtility.DisplayDialog("Bandhana — Lele Opening",
+                "Built 9 opening scenes under " + Dir + ".\n\n" +
+                "To play: open 01_LeleBedroom_Wakeup and press Play.\n" +
+                "Move with WASD/arrows. E to interact.",
+                "OK");
+        }
 
+        // Same as BuildAll but no save-prompt and no popup — used by the
+        // auto-rebuild-on-reload hook so iteration is silent.
+        public static void BuildAllSilent()
+        {
             EnsureDialogues();
-
             Build_01_Bedroom();
             Build_02_Kitchen();
             Build_03_Town_Day();
@@ -56,12 +66,6 @@ namespace Bandhana.EditorTools
             Build_07_Town_Night_Astral();
             Build_08_LeleHouse_Astral();
             Build_09_TUGarden_Boss();
-
-            EditorUtility.DisplayDialog("Bandhana — Lele Opening",
-                "Built 9 opening scenes under " + Dir + ".\n\n" +
-                "To play: open 01_LeleBedroom_Wakeup and press Play.\n" +
-                "Move with WASD/arrows. E to interact.",
-                "OK");
         }
 
         // ── Dialogues ────────────────────────────────────────────────────────
