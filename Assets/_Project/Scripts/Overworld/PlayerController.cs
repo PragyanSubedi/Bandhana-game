@@ -62,18 +62,25 @@ namespace Bandhana.Overworld
         void TryStep(Vector2 dir)
         {
             Vector2 target = (Vector2)transform.position + dir * tileSize;
-            var hit = Physics2D.OverlapBox(target, Vector2.one * tileSize * 0.8f, 0f, blockingLayers);
-            if (hit != null && !hit.isTrigger && hit.transform != transform) return;
+            var hits = Physics2D.OverlapBoxAll(target, Vector2.one * tileSize * 0.8f, 0f, blockingLayers);
+            foreach (var hit in hits)
+            {
+                if (hit.isTrigger) continue;
+                if (hit.transform == transform || hit.transform.IsChildOf(transform)) continue;
+                return;
+            }
             targetPosition = target;
             isMoving = true;
         }
 
         void CheckTriggers()
         {
-            var hits = Physics2D.OverlapBoxAll((Vector2)transform.position, Vector2.one * tileSize * 0.4f, 0f);
+            Vector2 here = (Vector2)transform.position;
+            var hits = Physics2D.OverlapBoxAll(here, Vector2.one * tileSize * 0.2f, 0f);
             foreach (var h in hits)
             {
                 if (h.transform == transform) continue;
+                if (Vector2.Distance((Vector2)h.transform.position, here) > tileSize * 0.5f) continue;
 
                 var helping = h.GetComponent<HelpingTrigger>();
                 if (helping != null) { helping.Trigger(); return; }
@@ -86,20 +93,26 @@ namespace Bandhana.Overworld
 
                 var haunt = h.GetComponent<SpiritHaunt>();
                 if (haunt != null) { haunt.Trigger(); return; }
+
+                var auto = h.GetComponent<AutoCutsceneTrigger>();
+                if (auto != null) { auto.Trigger(); return; }
             }
         }
 
         bool TryInteract()
         {
             Vector2 lookAt = (Vector2)transform.position + facing * tileSize;
-            var hits = Physics2D.OverlapBoxAll(lookAt, Vector2.one * tileSize * 0.6f, 0f);
+            var hits = Physics2D.OverlapBoxAll(lookAt, Vector2.one * tileSize * 0.2f, 0f);
             foreach (var h in hits)
             {
                 if (h.transform == transform) continue;
+                if (Vector2.Distance((Vector2)h.transform.position, lookAt) > tileSize * 0.5f) continue;
                 var npc = h.GetComponent<NPC>();
                 if (npc != null) { npc.Interact(); return true; }
                 var bnpc = h.GetComponent<BattleNPC>();
                 if (bnpc != null) { bnpc.Interact(); return true; }
+                var inter = h.GetComponent<Interactable>();
+                if (inter != null) { inter.Interact(); return true; }
             }
             return false;
         }

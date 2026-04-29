@@ -1,3 +1,4 @@
+using UnityEngine;
 using Bandhana.Data;
 
 namespace Bandhana.Core
@@ -16,6 +17,18 @@ namespace Bandhana.Core
         public static string victoryFlag;      // optional: SetFlag this on player victory
 
         public static bool HasPending => enemySpirit != null;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            enemySpirit = null;
+            enemyLevel = 5;
+            returnSceneName = "M1Test";
+            disableBond = false;
+            disableFlee = false;
+            winSceneName = null;
+            victoryFlag = null;
+        }
 
         public static void Clear()
         {

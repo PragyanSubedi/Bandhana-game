@@ -12,6 +12,15 @@ namespace Bandhana.Overworld
 
         Vector3 velocity;
 
+        void Awake()
+        {
+            if (target == null)
+            {
+                var pc = FindFirstObjectByType<PlayerController>();
+                if (pc != null) target = pc.transform;
+            }
+        }
+
         void LateUpdate()
         {
             if (target == null) return;

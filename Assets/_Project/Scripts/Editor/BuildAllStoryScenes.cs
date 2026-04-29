@@ -314,7 +314,7 @@ namespace Bandhana.EditorTools
             // East transition (gated) — moved to new east boundary
             MakeTransition(new Vector3(VHalfW, 0, 0), new Color(0.45f, 0.85f, 0.65f),
                 "Foothills", new Vector2(-FHalfW + 1, 0), "drumCollected",
-                "the drum is yours. take it before you leave.");
+                "you're missing a key item in this room.");
 
             EditorSceneManager.SaveScene(scene, VillageScenePath);
             EnsureSceneInBuildSettings(VillageScenePath);
@@ -649,7 +649,7 @@ namespace Bandhana.EditorTools
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = SpriteFactory.NPC(color);
             sr.sortingOrder = 6;
-            var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true;
+            var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true; col.size = Vector2.one;
             var npc = go.AddComponent<NPC>();
             npc.npcName = name;
             npc.dialogue = dialogue;
@@ -662,7 +662,7 @@ namespace Bandhana.EditorTools
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = SpriteFactory.Drum(color);
             sr.sortingOrder = 6;
-            var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true;
+            var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true; col.size = Vector2.one;
             var fs = go.AddComponent<FlagSetterTrigger>();
             fs.flag = flag;
             fs.dialogue = dialogue;
@@ -676,7 +676,7 @@ namespace Bandhana.EditorTools
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = SpriteFactory.Transition(color);
             sr.sortingOrder = 4;
-            var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true;
+            var col = go.AddComponent<BoxCollider2D>(); col.isTrigger = true; col.size = Vector2.one;
             var st = go.AddComponent<SceneTransition>();
             st.targetSceneName = targetScene;
             st.spawnPosition = spawn;

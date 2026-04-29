@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Bandhana.Core;
+using Bandhana.Data;
+using Bandhana.UI;
 
 namespace Bandhana.Overworld
 {
@@ -12,6 +14,8 @@ namespace Bandhana.Overworld
         public string requiredFlag;          // optional gate
         public string lockedHint = "the path is not yet open.";
 
+        DialogueSO lockedDialogueCache;
+
         public void Trigger()
         {
             if (string.IsNullOrEmpty(targetSceneName)) return;
@@ -19,6 +23,7 @@ namespace Bandhana.Overworld
             if (!string.IsNullOrEmpty(requiredFlag) && !GameManager.Instance.HasFlag(requiredFlag))
             {
                 Debug.Log($"[Bandhana] SceneTransition gated: needs flag '{requiredFlag}'. {lockedHint}");
+                ShowLockedHint();
                 return;
             }
 
@@ -30,6 +35,17 @@ namespace Bandhana.Overworld
 
             SaveContext.SetPending(spawnPosition);
             SceneManager.LoadScene(targetSceneName);
+        }
+
+        void ShowLockedHint()
+        {
+            if (DialogueRunner.Instance == null || string.IsNullOrEmpty(lockedHint)) return;
+            if (lockedDialogueCache == null)
+            {
+                lockedDialogueCache = ScriptableObject.CreateInstance<DialogueSO>();
+                lockedDialogueCache.lines.Add(new DialogueLine { speaker = "", text = lockedHint });
+            }
+            DialogueRunner.Instance.Play(lockedDialogueCache);
         }
     }
 }
