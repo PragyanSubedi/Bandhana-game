@@ -1,4 +1,5 @@
 using UnityEngine;
+using Bandhana.Core;
 
 namespace Bandhana.Overworld
 {
@@ -6,8 +7,8 @@ namespace Bandhana.Overworld
     {
         [SerializeField] float tileSize = 1f;
         [SerializeField] float moveSpeed = 2f;
-        [SerializeField] float minIdleTime = 1.5f;
-        [SerializeField] float maxIdleTime = 3f;
+        public float minIdleTime = 1.5f;
+        public float maxIdleTime = 3f;
         [SerializeField] float chanceToStep = 0.7f;
         [SerializeField] int reverseStepsOnBlock = 3;
         [SerializeField] LayerMask blockingLayers = ~0;
@@ -32,6 +33,10 @@ namespace Bandhana.Overworld
 
         void Update()
         {
+            // Freeze while any UI panel / dialogue / cutscene is open so the
+            // NPC doesn't wander off mid-conversation.
+            if (UIState.IsAnyOpen) return;
+
             if (isMoving)
             {
                 transform.position = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);

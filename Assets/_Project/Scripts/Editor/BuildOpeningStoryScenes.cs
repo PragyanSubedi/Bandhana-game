@@ -433,10 +433,14 @@ namespace Bandhana.EditorTools
 
             BuildPerimeter(5, 4, southGapX: 0);
 
-            // Karuna's Dad sits in the middle so the player walks up to him.
-            MakeBeatNPC("KarunaDad", new Vector3(-2, 1, 0),
-                        new Color(0.55f, 0.45f, 0.35f),
-                        OpeningBeat.KarunaDad, completionFlag: "knowsKarunaAtTU");
+            // Karuna's Dad — wanders around the house. Pauses while UIState
+            // is open (dialogue / pause menu) so he doesn't walk off mid-talk.
+            var karunaDad = MakeBeatNPC("KarunaDad", new Vector3(-2, 1, 0),
+                                        new Color(0.55f, 0.45f, 0.35f),
+                                        OpeningBeat.KarunaDad, completionFlag: "knowsKarunaAtTU");
+            var dadWander = karunaDad.AddComponent<WanderingNPC>();
+            dadWander.minIdleTime = 0.5f;
+            dadWander.maxIdleTime = 1.5f;
 
             // Decor — kept clear of the door tile (0, -3) so the entry path
             // isn't visually blocked.
