@@ -67,9 +67,7 @@ namespace Bandhana.Battle
                     int n = Mathf.Min(party.Count, 6);
                     sel = UITheme.NavigateGrid(sel, n, 3, null, out bool fired);
                     if (fired) bs.OnSwitchTo(sel);
-                    if (UnityEngine.InputSystem.Keyboard.current != null &&
-                        UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
-                        bs.OnSwitchCanceled();
+                    if (MobileInput.CancelPressed) bs.OnSwitchCanceled();
                     break;
                 }
             }
@@ -191,7 +189,7 @@ namespace Bandhana.Battle
 
                 case BattleState.End:
                     GUI.Label(new Rect(actionRect.x + 20, actionRect.y + 38, actionRect.width - 40, 30),
-                              "Press SPACE to return.", new GUIStyle(UITheme.Body) {
+                              "Press SPACE / tap A to return.", new GUIStyle(UITheme.Body) {
                                   alignment = TextAnchor.MiddleCenter,
                                   normal = { textColor = UITheme.SaffronSoft }
                               });

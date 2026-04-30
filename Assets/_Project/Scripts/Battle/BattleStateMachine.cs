@@ -93,9 +93,7 @@ namespace Bandhana.Battle
             }
 
             if (!waitingForReturn) return;
-            var kb = Keyboard.current;
-            if (kb == null) return;
-            if (kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame)
+            if (MobileInput.ConfirmPressed)
             {
                 if (Application.CanStreamedLevelBeLoaded(returnTargetScene))
                     SceneManager.LoadScene(returnTargetScene);

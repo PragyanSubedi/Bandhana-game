@@ -51,15 +51,12 @@ namespace Bandhana.UI
             if (!isPlaying) return;
             if (Time.frameCount == playStartFrame) return;
 
-            var kb = Keyboard.current;
-            if (kb == null) return;
-            bool advance = kb.eKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame;
-            if (advance)
+            if (MobileInput.ConfirmPressed)
             {
-                if (!fullyRevealed) { fullyRevealed = true; }
+                if (!fullyRevealed) fullyRevealed = true;
                 else Advance();
             }
-            else if (kb.escapeKey.wasPressedThisFrame)
+            else if (MobileInput.CancelPressed)
                 End();
         }
 

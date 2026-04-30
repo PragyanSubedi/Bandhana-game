@@ -66,8 +66,7 @@ namespace Bandhana.Story
                 registeredOffbeatHit = false;
             }
 
-            var kb = Keyboard.current;
-            if (kb != null && kb.spaceKey.wasPressedThisFrame && !registeredOffbeatHit)
+            if (MobileInput.ConfirmPressed && !registeredOffbeatHit)
             {
                 // Counter-beat target = mid-cycle. Distance from mid.
                 float mid = beatPeriod * 0.5f;
@@ -147,7 +146,7 @@ namespace Bandhana.Story
 
             GUI.Label(new Rect(rect.x, rect.y + H - 36, rect.width, 22), lastFeedback, bodyStyle);
             GUI.Label(new Rect(rect.x, rect.y + H - 18, rect.width, 18),
-                      "press SPACE between her beats", bodyStyle);
+                      "press SPACE / tap A between her beats", bodyStyle);
         }
 
         void OnDisable() { if (IsActive) { IsActive = false; UIState.Close(); } }

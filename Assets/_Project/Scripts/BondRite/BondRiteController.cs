@@ -78,8 +78,7 @@ namespace Bandhana.BondRite
                 if (currentBeat >= totalBeats) { Finish(); return; }
             }
 
-            var kb = Keyboard.current;
-            if (kb != null && kb.spaceKey.wasPressedThisFrame)
+            if (MobileInput.ConfirmPressed)
             {
                 float distance = Mathf.Min(beatTimer, beatPeriod - beatTimer);
                 if (distance <= hitWindow && !registeredHitForCurrentBeat)
@@ -150,7 +149,7 @@ namespace Bandhana.BondRite
             GUI.color = prev;
 
             GUI.Label(new Rect(rect.x, rect.y + 240, rect.width, 22), lastFeedback, bodyStyle);
-            GUI.Label(new Rect(rect.x, rect.y + 256, rect.width, 22), "press SPACE on each pulse", bodyStyle);
+            GUI.Label(new Rect(rect.x, rect.y + 256, rect.width, 22), "press SPACE / tap A on each pulse", bodyStyle);
         }
     }
 }

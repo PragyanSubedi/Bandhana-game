@@ -23,9 +23,7 @@ namespace Bandhana.UI
 
         void Update()
         {
-            var kb = Keyboard.current;
-            if (kb == null) return;
-            if (kb.escapeKey.wasPressedThisFrame)
+            if (MobileInput.CancelPressed)
             {
                 if (isOpen) Close();
                 else if (!UIState.IsAnyOpen) Open();

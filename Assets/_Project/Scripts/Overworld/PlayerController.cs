@@ -51,21 +51,19 @@ namespace Bandhana.Overworld
             }
 
             var kb = Keyboard.current;
-            if (kb == null) return;
 
-            // Debug
-            if (kb.hKey.wasPressedThisFrame) GameManager.Instance.HealAll();
-            if (kb.bKey.wasPressedThisFrame && Application.CanStreamedLevelBeLoaded("M3Battle"))
-            { SceneManager.LoadScene("M3Battle"); return; }
+            // Debug (keyboard only)
+            if (kb != null)
+            {
+                if (kb.hKey.wasPressedThisFrame) GameManager.Instance.HealAll();
+                if (kb.bKey.wasPressedThisFrame && Application.CanStreamedLevelBeLoaded("M3Battle"))
+                { SceneManager.LoadScene("M3Battle"); return; }
+            }
 
-            if (kb.eKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame)
+            if (MobileInput.ConfirmPressed)
                 if (TryInteract()) return;
 
-            Vector2 dir = Vector2.zero;
-            if (kb.leftArrowKey.isPressed  || kb.aKey.isPressed) dir = Vector2.left;
-            else if (kb.rightArrowKey.isPressed || kb.dKey.isPressed) dir = Vector2.right;
-            else if (kb.downArrowKey.isPressed  || kb.sKey.isPressed) dir = Vector2.down;
-            else if (kb.upArrowKey.isPressed    || kb.wKey.isPressed) dir = Vector2.up;
+            Vector2 dir = MobileInput.MoveCardinal;
             if (dir != Vector2.zero) { facing = dir; TryStep(dir); }
 
             UpdateAnimator();

@@ -32,19 +32,18 @@ namespace Bandhana.UI
         void Update()
         {
             if (!isOpen) return;
-            var kb = Keyboard.current;
-            if (kb == null) return;
 
-            if (kb.escapeKey.wasPressedThisFrame) { AudioManager.Instance.Click(); Close(); return; }
+            if (MobileInput.CancelPressed) { AudioManager.Instance.Click(); Close(); return; }
 
             int prev = sel;
             // Enter triggers focused row's primary action; arrows on rows 0..2 are reserved for value adjust.
             sel = UITheme.NavigateVertical(sel, COUNT, null, out bool fired);
             if (sel != prev) AudioManager.Instance.Click();
 
-            // Left/Right adjusts the selected row when applicable.
-            bool left  = kb.leftArrowKey.wasPressedThisFrame  || kb.aKey.wasPressedThisFrame;
-            bool right = kb.rightArrowKey.wasPressedThisFrame || kb.dKey.wasPressedThisFrame;
+            // Left/Right adjusts the selected row when applicable (keyboard only — touch users drag the slider / tap the toggle).
+            var kb = Keyboard.current;
+            bool left  = kb != null && (kb.leftArrowKey.wasPressedThisFrame  || kb.aKey.wasPressedThisFrame);
+            bool right = kb != null && (kb.rightArrowKey.wasPressedThisFrame || kb.dKey.wasPressedThisFrame);
 
             switch (sel)
             {

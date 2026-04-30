@@ -18,16 +18,14 @@ namespace Bandhana.UI
 
         void Update()
         {
-            var kb = Keyboard.current;
-            if (kb == null) return;
-            if (kb.pKey.wasPressedThisFrame)
+            if (MobileInput.PartyPressed)
             {
                 if (isOpen) Close();
                 else if (!UIState.IsAnyOpen) Open();
                 return;
             }
             if (!isOpen) return;
-            if (kb.escapeKey.wasPressedThisFrame) { Close(); return; }
+            if (MobileInput.CancelPressed) { Close(); return; }
 
             int count = GameManager.Instance.party.Count;
             if (count > 0)
