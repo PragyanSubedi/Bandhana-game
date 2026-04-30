@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.SceneManagement;
+using Bandhana.Battle;
 using ETouch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
 namespace Bandhana.Core
@@ -26,6 +28,9 @@ namespace Bandhana.Core
         bool aHeldNow, aHeldPrev;
         bool pauseHeldNow, pauseHeldPrev;
         bool partyHeldNow, partyHeldPrev;
+
+        BattleStateMachine cachedBattle;
+        bool battleCached;
 
         Texture2D stickBaseTex;
         Texture2D stickKnobTex;
@@ -64,6 +69,24 @@ namespace Bandhana.Core
         void OnEnable()
         {
             if (!EnhancedTouchSupport.enabled) EnhancedTouchSupport.Enable();
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        void OnSceneLoaded(Scene s, LoadSceneMode m) { battleCached = false; }
+
+        BattleState? GetBattleState()
+        {
+            if (!battleCached)
+            {
+                cachedBattle = FindFirstObjectByType<BattleStateMachine>();
+                battleCached = true;
+            }
+            return cachedBattle != null ? cachedBattle.state : (BattleState?)null;
         }
 
         void Awake()
@@ -156,12 +179,30 @@ namespace Bandhana.Core
 
         void OnGUI()
         {
-            // Pause + Party buttons (top-right corner cluster).
-            if (GUI.RepeatButton(PauseButtonRect, "Pause", SmallLabelStyle())) pauseHeldNow = true;
-            if (GUI.RepeatButton(PartyButtonRect, "Party", SmallLabelStyle())) partyHeldNow = true;
+            // Hide overworld touch UI while the player is choosing battle actions —
+            // those panels fill the bottom of the screen and would be blocked otherwise.
+            // BondRite / End / Start show A so the player can still tap on rhythm beats / continue.
+            var bstate = GetBattleState();
+            bool inBattleSelecting = bstate.HasValue && (
+                bstate.Value == BattleState.ActionSelect ||
+                bstate.Value == BattleState.MoveSelect ||
+                bstate.Value == BattleState.SwitchSelect ||
+                bstate.Value == BattleState.ResolveTurn);
 
-            // A button (bottom-right)
-            DrawCircleButton(AButtonRect, "A", btnTex, ref aHeldNow);
+            bool showJoystick = !UIState.IsAnyOpen && !inBattleSelecting;
+            bool showA        = !inBattleSelecting;
+            bool showParty    = !inBattleSelecting && !bstate.HasValue;
+            bool showPause    = !inBattleSelecting;
+
+            if (showPause)
+                if (GUI.RepeatButton(PauseButtonRect, "Pause", SmallLabelStyle())) pauseHeldNow = true;
+            if (showParty)
+                if (GUI.RepeatButton(PartyButtonRect, "Party", SmallLabelStyle())) partyHeldNow = true;
+
+            if (showA)
+                DrawCircleButton(AButtonRect, "A", btnTex, ref aHeldNow);
+
+            if (!showJoystick) return;
 
             // Joystick visuals — only while active.
             if (stickActive)
