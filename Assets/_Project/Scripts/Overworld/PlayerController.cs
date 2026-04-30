@@ -11,6 +11,11 @@ namespace Bandhana.Overworld
         [SerializeField] float moveSpeed = 5f;
         [SerializeField] float tileSize = 1f;
         [SerializeField] LayerMask blockingLayers = ~0;
+        [SerializeField] Animator animator;
+
+        static readonly int MoveXHash = Animator.StringToHash("MoveX");
+        static readonly int MoveYHash = Animator.StringToHash("MoveY");
+        static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
 
         Vector2 targetPosition;
         Vector2 facing = Vector2.down;
@@ -18,6 +23,8 @@ namespace Bandhana.Overworld
 
         void Awake()
         {
+            if (animator == null) animator = GetComponentInChildren<Animator>();
+
             if (SaveContext.TryConsume(out var pending))
                 transform.position = new Vector3(pending.x, pending.y, transform.position.z);
 
@@ -27,16 +34,19 @@ namespace Bandhana.Overworld
                 transform.position.z);
             targetPosition = transform.position;
             _ = GameManager.Instance;
+
+            UpdateAnimator();
         }
 
         void Update()
         {
-            if (UIState.IsAnyOpen || UIState.InputConsumedThisFrame) return;
+            if (UIState.IsAnyOpen || UIState.InputConsumedThisFrame) { UpdateAnimator(); return; }
 
             if (isMoving)
             {
                 transform.position = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
                 if ((Vector2)transform.position == targetPosition) { isMoving = false; CheckTriggers(); }
+                UpdateAnimator();
                 return;
             }
 
@@ -57,6 +67,16 @@ namespace Bandhana.Overworld
             else if (kb.downArrowKey.isPressed  || kb.sKey.isPressed) dir = Vector2.down;
             else if (kb.upArrowKey.isPressed    || kb.wKey.isPressed) dir = Vector2.up;
             if (dir != Vector2.zero) { facing = dir; TryStep(dir); }
+
+            UpdateAnimator();
+        }
+
+        void UpdateAnimator()
+        {
+            if (animator == null) return;
+            animator.SetFloat(MoveXHash, facing.x);
+            animator.SetFloat(MoveYHash, facing.y);
+            animator.SetBool(IsMovingHash, isMoving);
         }
 
         void TryStep(Vector2 dir)
